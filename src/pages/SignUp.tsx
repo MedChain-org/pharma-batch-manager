@@ -8,17 +8,24 @@ import SignUpForm from "@/components/signup/SignUpForm";
 const SignUp: React.FC = () => {
   return (
     <AuthLayout 
-      title="Create your account" 
-      subtitle="Join the PharmaTrack network to secure your pharmaceutical supply chain"
+      title="Join our network" 
+      subtitle="Create your account to secure your pharmaceutical supply chain"
     >
-      <SignUpForm />
+      <div className="relative">
+        <div className="absolute -top-10 left-10 w-20 h-20 bg-pharma-light rounded-full blur-xl opacity-50"></div>
+        <div className="absolute -bottom-10 right-10 w-20 h-20 bg-medical-light rounded-full blur-xl opacity-50"></div>
+        
+        <div className="relative p-6 rounded-lg border border-muted shadow-sm bg-gradient-to-br from-white via-background to-white">
+          <SignUpForm />
+        </div>
+      </div>
       
       <div className="mt-8 text-center">
         <p className="text-sm text-muted-foreground">
           Already have an account?{" "}
           <Link 
             to="/signin" 
-            className="font-medium text-primary hover:text-primary/80 transition-colors"
+            className="font-medium text-primary hover:underline transition-colors"
           >
             Sign in
           </Link>
