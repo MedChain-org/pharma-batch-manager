@@ -28,33 +28,38 @@ import {
   User 
 } from "lucide-react";
 
+// Create a combined schema for the entire form
+const signUpSchema = z.object({
+  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+  email: z.string().email({ message: "Invalid email address" }),
+  phoneNumber: z.string().min(5, { message: "Invalid phone number" }),
+  password: z.string().min(8, { message: "Password must be at least 8 characters" }),
+  businessName: z.string().min(2, { message: "Business name is required" }),
+  govtCredential: z.string().min(2, { message: "Government credential is required" }),
+});
+
+type SignUpFormValues = z.infer<typeof signUpSchema>;
+
 const SignUpForm: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Basic information schema
-  const basicInfoSchema = z.object({
-    name: z.string().min(2, { message: "Name must be at least 2 characters" }),
-    email: z.string().email({ message: "Invalid email address" }),
-    phoneNumber: z.string().min(5, { message: "Invalid phone number" }),
-    password: z.string().min(8, { message: "Password must be at least 8 characters" }),
-  });
-
-  // Additional details schema
-  const additionalInfoSchema = z.object({
-    businessName: z.string().min(2, { message: "Business name is required" }),
-    govtCredential: z.string().min(2, { message: "Government credential is required" }),
-  });
-
-  // Combined schema that changes based on step
-  const formSchema = currentStep === 1 
-    ? basicInfoSchema 
-    : additionalInfoSchema;
-
-  // Initialize form
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  // Initialize form with the combined schema
+  const form = useForm<SignUpFormValues>({
+    resolver: zodResolver(
+      currentStep === 1 
+        ? signUpSchema.pick({
+            name: true,
+            email: true,
+            phoneNumber: true,
+            password: true,
+          })
+        : signUpSchema.pick({
+            businessName: true,
+            govtCredential: true,
+          })
+    ),
     defaultValues: {
       name: "",
       email: "",
@@ -71,7 +76,7 @@ const SignUpForm: React.FC = () => {
   };
 
   // Handle form submission
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+  const onSubmit = async (data: Partial<SignUpFormValues>) => {
     if (currentStep === 1 && selectedRole) {
       // Move to next step
       setCurrentStep(2);
