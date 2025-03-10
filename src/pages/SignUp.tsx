@@ -3,7 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import AuthLayout from "@/components/AuthLayout";
-import SignUpForm from "@/components/SignUpForm";
+import SignUpForm from "@/components/signup/SignUpForm";
 
 const SignUp: React.FC = () => {
   return (
