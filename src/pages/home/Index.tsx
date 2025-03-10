@@ -2,8 +2,8 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import Navbar from "@/components/Navbar";
-import Hero from "@/components/Hero";
+import Navbar from "@/components/shared/Navbar";
+import Hero from "@/components/shared/Hero";
 import { Button } from "@/components/ui/button";
 import { 
   Shield, 
