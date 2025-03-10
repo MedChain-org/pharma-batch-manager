@@ -1,4 +1,3 @@
-
 import React from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -30,10 +29,12 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({
           <div className="absolute -top-[10%] -left-[10%] w-1/2 h-1/2 bg-primary/5 rounded-full blur-3xl"></div>
           <div className="absolute top-[60%] -right-[5%] w-1/3 h-1/3 bg-accent/5 rounded-full blur-3xl"></div>
         </div>
-        
+
         <div className="relative z-10 flex flex-col justify-center items-center w-full p-12">
-          <div className="text-4xl font-bold text-primary mb-8">PharmaTrack</div>
-          
+          <div className="text-4xl font-bold text-primary mb-8">
+            PharmaTrack
+          </div>
+
           <div className="glass-card max-w-md p-8 mb-8">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center">
@@ -42,31 +43,32 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({
               </div>
               <div className="text-xs text-muted-foreground">Now</div>
             </div>
-            
+
             <p className="text-sm text-foreground/80 mb-4">
-              Blockchain-powered end-to-end tracking of pharmaceuticals ensures 
+              Blockchain-powered end-to-end tracking of pharmaceuticals ensures
               authenticity and safety at every stage of the supply chain.
             </p>
-            
+
             <div className="flex space-x-2">
               <div className="flex-1 h-1 bg-medical-light rounded-full"></div>
               <div className="flex-1 h-1 bg-medical-light rounded-full"></div>
               <div className="flex-1 h-1 bg-medical-dark rounded-full"></div>
             </div>
           </div>
-          
+
           <div className="flex space-x-2 mb-8">
             <div className="w-2 h-2 rounded-full bg-primary/30"></div>
             <div className="w-2 h-2 rounded-full bg-primary/60"></div>
             <div className="w-2 h-2 rounded-full bg-primary"></div>
           </div>
-          
+
           <p className="text-sm text-center text-muted-foreground max-w-xs">
-            Ensuring the safety and efficacy of pharmaceuticals through transparent tracking and verification.
+            Ensuring the safety and efficacy of pharmaceuticals through
+            transparent tracking and verification.
           </p>
         </div>
       </motion.div>
-      
+
       {/* Right panel (form) */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -102,16 +104,18 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({
               </Link>
             </div>
           )}
-          
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.5 }}
           >
-            <h2 className="text-2xl font-bold leading-9 tracking-tight">{title}</h2>
+            <h2 className="text-2xl font-bold leading-9 tracking-tight">
+              {title}
+            </h2>
             <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>
           </motion.div>
-          
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -11,26 +10,133 @@ import {
   Link as LinkIcon, 
   BarChart3, 
   Check, 
-  ExternalLink 
+  ExternalLink,
+  ArrowRight,
+  Star,
+  Users,
+  ChevronRight
 } from "lucide-react";
 
 const Index: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-white via-primary/5 to-white">
       <Navbar />
 
       <Hero />
 
-      {/* Features Section */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-6 md:px-8">
+      {/* Stats Banner */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="relative overflow-hidden"
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 backdrop-blur-xl"></div>
+        <div className="container mx-auto px-6 py-12 relative">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {[
+              { value: "10,000+", label: "Batches Tracked", color: "from-primary/20 to-primary/10" },
+              { value: "99.9%", label: "Accuracy Rate", color: "from-accent/20 to-accent/10" },
+              { value: "5,000+", label: "Active Users", color: "from-primary/20 to-primary/10" },
+              { value: "24/7", label: "Support", color: "from-accent/20 to-accent/10" },
+            ].map((stat, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1, duration: 0.6 }}
+                className={`text-center p-6 rounded-2xl bg-gradient-to-br ${stat.color} backdrop-blur-lg border border-white/20 shadow-xl`}
+              >
+                <div className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
+                  {stat.value}
+                </div>
+                <div className="text-sm font-medium text-foreground/80">{stat.label}</div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </motion.div>
+
+      {/* How it Works Section */}
+      <section className="py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent"></div>
+        <div className="container mx-auto px-6 md:px-8 relative">
           <div className="text-center mb-16">
             <motion.span
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className="inline-block px-3 py-1 mb-4 text-xs font-medium tracking-wider text-primary bg-primary/10 rounded-full"
+              className="inline-block px-4 py-1.5 mb-4 text-xs font-medium tracking-wider text-primary bg-primary/10 rounded-full ring-1 ring-primary/20"
+            >
+              Simple Process
+            </motion.span>
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
+            >
+              How PharmaTrack Works
+            </motion.h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                step: "1",
+                title: "Register Your Batch",
+                description: "Create a unique digital identity for each pharmaceutical batch",
+                gradient: "from-primary/20 to-primary/5"
+              },
+              {
+                step: "2",
+                title: "Track Movement",
+                description: "Monitor real-time location and handling throughout the supply chain",
+                gradient: "from-accent/20 to-accent/5"
+              },
+              {
+                step: "3",
+                title: "Verify Authenticity",
+                description: "Instantly verify product authenticity at any point",
+                gradient: "from-primary/20 to-primary/5"
+              }
+            ].map((step, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 * index, duration: 0.5 }}
+                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                className={`relative p-8 rounded-2xl bg-gradient-to-br ${step.gradient} backdrop-blur-sm border border-white/20 shadow-xl group`}
+              >
+                <div className="absolute -top-4 left-6 bg-gradient-to-r from-primary to-accent w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white shadow-lg transform group-hover:scale-110 transition-transform">
+                  {step.step}
+                </div>
+                <h3 className="text-xl font-semibold mt-4 mb-3 flex items-center">
+                  {step.title}
+                  <ChevronRight className="w-4 h-4 ml-2 opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 transition-all" />
+                </h3>
+                <p className="text-foreground/70">{step.description}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-24 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent/5 to-transparent"></div>
+        <div className="container mx-auto px-6 md:px-8 relative">
+          <div className="text-center mb-16">
+            <motion.span
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="inline-block px-4 py-1.5 mb-4 text-xs font-medium tracking-wider text-primary bg-primary/10 rounded-full ring-1 ring-primary/20"
             >
               Key Features
             </motion.span>
@@ -39,7 +145,7 @@ const Index: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="text-3xl md:text-4xl font-bold mb-4"
+              className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
             >
               Why Choose PharmaTrack?
             </motion.h2>
@@ -48,7 +154,7 @@ const Index: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1, duration: 0.6 }}
-              className="max-w-2xl mx-auto text-foreground/70"
+              className="max-w-2xl mx-auto text-foreground/70 text-lg"
             >
               Our comprehensive solution ensures transparency and authenticity across the entire pharmaceutical supply chain,
               from manufacturers to patients.
@@ -60,22 +166,26 @@ const Index: React.FC = () => {
               {
                 icon: Shield,
                 title: "Secure Tracking",
-                description: "Blockchain-powered technology ensures tamper-proof record keeping for each drug batch."
+                description: "Blockchain-powered technology ensures tamper-proof record keeping for each drug batch.",
+                gradient: "from-primary/20 to-primary/5"
               },
               {
                 icon: LinkIcon,
                 title: "End-to-End Traceability",
-                description: "Follow pharmaceuticals from production to dispensing with complete visibility."
+                description: "Follow pharmaceuticals from production to dispensing with complete visibility.",
+                gradient: "from-accent/20 to-accent/5"
               },
               {
                 icon: Smartphone,
                 title: "Mobile Verification",
-                description: "Easy verification of drug authenticity at any point in the supply chain."
+                description: "Easy verification of drug authenticity at any point in the supply chain.",
+                gradient: "from-primary/20 to-primary/5"
               },
               {
                 icon: BarChart3,
                 title: "Advanced Analytics",
-                description: "Gain insights into supply chain efficiency and identify areas for improvement."
+                description: "Gain insights into supply chain efficiency and identify areas for improvement.",
+                gradient: "from-accent/20 to-accent/5"
               }
             ].map((feature, index) => (
               <motion.div
@@ -84,13 +194,17 @@ const Index: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.1 * index, duration: 0.5 }}
-                className="glass-card p-6"
+                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                className={`p-8 rounded-2xl bg-gradient-to-br ${feature.gradient} backdrop-blur-sm border border-white/20 shadow-xl group`}
               >
-                <div className="bg-primary/10 w-12 h-12 rounded-xl flex items-center justify-center mb-5">
-                  <feature.icon className="h-6 w-6 text-primary" />
+                <div className="bg-gradient-to-r from-primary to-accent w-14 h-14 rounded-xl flex items-center justify-center mb-6 transform group-hover:scale-110 transition-transform">
+                  <feature.icon className="h-7 w-7 text-white" />
                 </div>
-                <h3 className="text-xl font-medium mb-3">{feature.title}</h3>
-                <p className="text-foreground/70 text-sm">{feature.description}</p>
+                <h3 className="text-xl font-semibold mb-3 flex items-center">
+                  {feature.title}
+                  <ChevronRight className="w-4 h-4 ml-2 opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 transition-all" />
+                </h3>
+                <p className="text-foreground/70">{feature.description}</p>
               </motion.div>
             ))}
           </div>
@@ -265,6 +379,107 @@ const Index: React.FC = () => {
               </div>
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent"></div>
+        <div className="container mx-auto px-6 md:px-8 relative">
+          <div className="text-center mb-16">
+            <motion.span
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="inline-block px-4 py-1.5 mb-4 text-xs font-medium tracking-wider text-primary bg-primary/10 rounded-full ring-1 ring-primary/20"
+            >
+              Testimonials
+            </motion.span>
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
+            >
+              What Our Users Say
+            </motion.h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                quote: "PharmaTrack has revolutionized how we manage our pharmaceutical supply chain. The transparency and security it provides is invaluable.",
+                author: "Dr. Sarah Johnson",
+                role: "Chief Pharmacist",
+                company: "MedCare Hospital",
+                gradient: "from-primary/20 to-primary/5"
+              },
+              {
+                quote: "Implementation was smooth and the results were immediate. We've seen a 40% reduction in verification time.",
+                author: "Michael Chen",
+                role: "Supply Chain Director",
+                company: "Global Pharma Ltd",
+                gradient: "from-accent/20 to-accent/5"
+              },
+              {
+                quote: "The real-time tracking and authentication features have helped us eliminate counterfeit products entirely.",
+                author: "Emma Williams",
+                role: "Quality Control Manager",
+                company: "PharmaTech Solutions",
+                gradient: "from-primary/20 to-primary/5"
+              }
+            ].map((testimonial, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 * index, duration: 0.5 }}
+                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                className={`p-8 rounded-2xl bg-gradient-to-br ${testimonial.gradient} backdrop-blur-sm border border-white/20 shadow-xl`}
+              >
+                <div className="flex gap-1 mb-6">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-5 w-5 fill-primary text-primary" />
+                  ))}
+                </div>
+                <p className="text-foreground/80 mb-6 text-lg italic leading-relaxed">"{testimonial.quote}"</p>
+                <div className="border-t border-white/20 pt-6">
+                  <p className="font-semibold text-lg">{testimonial.author}</p>
+                  <p className="text-sm text-foreground/60">{testimonial.role}</p>
+                  <p className="text-sm text-foreground/60">{testimonial.company}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Trusted By Section */}
+      <section className="py-16 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent/5 to-transparent"></div>
+        <div className="container mx-auto px-6 md:px-8 relative">
+          <div className="text-center mb-12">
+            <p className="text-lg font-medium text-foreground/80 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Trusted by Industry Leaders
+            </p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-12 items-center justify-items-center">
+            {[...Array(6)].map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 * i, duration: 0.5 }}
+                className="h-12 w-full flex items-center justify-center"
+              >
+                <div className="bg-gradient-to-r from-primary/20 to-accent/20 h-6 w-32 rounded-lg animate-pulse"></div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
