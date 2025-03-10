@@ -19,6 +19,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import AuthLayout from "@/components/AuthLayout";
 import { AtSign, Lock } from "lucide-react";
+import UserTypeSelector from "@/components/UserTypeSelector";
+import { UserRole } from "@/utils/types";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -28,6 +30,7 @@ const formSchema = z.object({
 
 const SignIn: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -39,11 +42,18 @@ const SignIn: React.FC = () => {
   });
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    if (!selectedRole) {
+      toast.error("Please select your role", {
+        description: "You need to select your role to sign in.",
+      });
+      return;
+    }
+    
     setIsLoading(true);
 
     try {
       // Simulate API call
-      console.log("Signing in with:", data);
+      console.log("Signing in with:", { ...data, role: selectedRole });
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       // Success notification
@@ -65,6 +75,10 @@ const SignIn: React.FC = () => {
     }
   };
 
+  const handleRoleChange = (role: UserRole) => {
+    setSelectedRole(role);
+  };
+
   return (
     <AuthLayout 
       title="Sign in to your account" 
@@ -72,6 +86,20 @@ const SignIn: React.FC = () => {
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="mb-6">
+              <h3 className="text-sm font-medium mb-3">Select your role</h3>
+              <UserTypeSelector 
+                selectedRole={selectedRole} 
+                onChange={handleRoleChange} 
+              />
+            </div>
+          </motion.div>
+
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -157,7 +185,7 @@ const SignIn: React.FC = () => {
             <Button 
               type="submit" 
               className="w-full"
-              disabled={isLoading}
+              disabled={isLoading || !selectedRole}
             >
               {isLoading ? (
                 <div className="flex items-center">
