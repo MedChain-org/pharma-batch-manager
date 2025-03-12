@@ -3,29 +3,31 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/shared/Navbar";
 import Hero from "@/components/shared/Hero";
+import AnimatedBackground from "@/components/shared/AnimatedBackground";
 import { Button } from "@/components/ui/button";
-import { 
-  Shield, 
-  Smartphone, 
-  Link as LinkIcon, 
-  BarChart3, 
-  Check, 
+import {
+  Shield,
+  Smartphone,
+  Link as LinkIcon,
+  BarChart3,
+  Check,
   ExternalLink,
   ArrowRight,
   Star,
   Users,
-  ChevronRight
+  ChevronRight,
 } from "lucide-react";
 
 const Index: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-white via-primary/5 to-white">
+    <div className="min-h-screen flex flex-col">
+      <AnimatedBackground />
       <Navbar />
 
       <Hero />
 
       {/* Stats Banner */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
@@ -35,10 +37,26 @@ const Index: React.FC = () => {
         <div className="container mx-auto px-6 py-12 relative">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
-              { value: "10,000+", label: "Batches Tracked", color: "from-primary/20 to-primary/10" },
-              { value: "99.9%", label: "Accuracy Rate", color: "from-accent/20 to-accent/10" },
-              { value: "5,000+", label: "Active Users", color: "from-primary/20 to-primary/10" },
-              { value: "24/7", label: "Support", color: "from-accent/20 to-accent/10" },
+              {
+                value: "10,000+",
+                label: "Batches Tracked",
+                color: "from-primary/20 to-primary/10",
+              },
+              {
+                value: "99.9%",
+                label: "Accuracy Rate",
+                color: "from-accent/20 to-accent/10",
+              },
+              {
+                value: "5,000+",
+                label: "Active Users",
+                color: "from-primary/20 to-primary/10",
+              },
+              {
+                value: "24/7",
+                label: "Support",
+                color: "from-accent/20 to-accent/10",
+              },
             ].map((stat, index) => (
               <motion.div
                 key={index}
@@ -50,7 +68,9 @@ const Index: React.FC = () => {
                 <div className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
                   {stat.value}
                 </div>
-                <div className="text-sm font-medium text-foreground/80">{stat.label}</div>
+                <div className="text-sm font-medium text-foreground/80">
+                  {stat.label}
+                </div>
               </motion.div>
             ))}
           </div>
@@ -87,21 +107,24 @@ const Index: React.FC = () => {
               {
                 step: "1",
                 title: "Register Your Batch",
-                description: "Create a unique digital identity for each pharmaceutical batch",
-                gradient: "from-primary/20 to-primary/5"
+                description:
+                  "Create a unique digital identity for each pharmaceutical batch",
+                gradient: "from-primary/20 to-primary/5",
               },
               {
                 step: "2",
                 title: "Track Movement",
-                description: "Monitor real-time location and handling throughout the supply chain",
-                gradient: "from-accent/20 to-accent/5"
+                description:
+                  "Monitor real-time location and handling throughout the supply chain",
+                gradient: "from-accent/20 to-accent/5",
               },
               {
                 step: "3",
                 title: "Verify Authenticity",
-                description: "Instantly verify product authenticity at any point",
-                gradient: "from-primary/20 to-primary/5"
-              }
+                description:
+                  "Instantly verify product authenticity at any point",
+                gradient: "from-primary/20 to-primary/5",
+              },
             ].map((step, index) => (
               <motion.div
                 key={index}
@@ -156,8 +179,9 @@ const Index: React.FC = () => {
               transition={{ delay: 0.1, duration: 0.6 }}
               className="max-w-2xl mx-auto text-foreground/70 text-lg"
             >
-              Our comprehensive solution ensures transparency and authenticity across the entire pharmaceutical supply chain,
-              from manufacturers to patients.
+              Our comprehensive solution ensures transparency and authenticity
+              across the entire pharmaceutical supply chain, from manufacturers
+              to patients.
             </motion.p>
           </div>
 
@@ -166,27 +190,31 @@ const Index: React.FC = () => {
               {
                 icon: Shield,
                 title: "Secure Tracking",
-                description: "Blockchain-powered technology ensures tamper-proof record keeping for each drug batch.",
-                gradient: "from-primary/20 to-primary/5"
+                description:
+                  "Blockchain-powered technology ensures tamper-proof record keeping for each drug batch.",
+                gradient: "from-primary/20 to-primary/5",
               },
               {
                 icon: LinkIcon,
                 title: "End-to-End Traceability",
-                description: "Follow pharmaceuticals from production to dispensing with complete visibility.",
-                gradient: "from-accent/20 to-accent/5"
+                description:
+                  "Follow pharmaceuticals from production to dispensing with complete visibility.",
+                gradient: "from-accent/20 to-accent/5",
               },
               {
                 icon: Smartphone,
                 title: "Mobile Verification",
-                description: "Easy verification of drug authenticity at any point in the supply chain.",
-                gradient: "from-primary/20 to-primary/5"
+                description:
+                  "Easy verification of drug authenticity at any point in the supply chain.",
+                gradient: "from-primary/20 to-primary/5",
               },
               {
                 icon: BarChart3,
                 title: "Advanced Analytics",
-                description: "Gain insights into supply chain efficiency and identify areas for improvement.",
-                gradient: "from-accent/20 to-accent/5"
-              }
+                description:
+                  "Gain insights into supply chain efficiency and identify areas for improvement.",
+                gradient: "from-accent/20 to-accent/5",
+              },
             ].map((feature, index) => (
               <motion.div
                 key={index}
@@ -240,8 +268,8 @@ const Index: React.FC = () => {
               transition={{ delay: 0.1, duration: 0.6 }}
               className="max-w-2xl mx-auto text-foreground/70"
             >
-              Whether you're a manufacturer, distributor, pharmacist, or doctor, PharmaTrack provides
-              the tools you need to ensure pharmaceutical integrity.
+              Whether you're a manufacturer, distributor, pharmacist, or doctor,
+              provides the tools you need to ensure pharmaceutical integrity.
             </motion.p>
           </div>
 
@@ -253,11 +281,11 @@ const Index: React.FC = () => {
                   "Create and manage drug batches",
                   "Track manufacturing processes",
                   "Maintain quality control records",
-                  "Generate compliance documentation"
+                  "Generate compliance documentation",
                 ],
                 cta: "Start manufacturing",
                 color: "from-primary/5 to-primary/10",
-                delay: 0
+                delay: 0,
               },
               {
                 title: "Distributors",
@@ -265,11 +293,11 @@ const Index: React.FC = () => {
                   "Track shipments in real-time",
                   "Verify drug authenticity",
                   "Manage warehousing operations",
-                  "Optimize distribution routes"
+                  "Optimize distribution routes",
                 ],
                 cta: "Optimize distribution",
                 color: "from-accent/5 to-accent/10",
-                delay: 0.1
+                delay: 0.1,
               },
               {
                 title: "Pharmacists",
@@ -277,11 +305,11 @@ const Index: React.FC = () => {
                   "Verify medication authenticity",
                   "Track prescription fulfillment",
                   "Manage inventory efficiently",
-                  "Ensure patient safety"
+                  "Ensure patient safety",
                 ],
                 cta: "Enhance patient care",
                 color: "from-primary/5 to-primary/10",
-                delay: 0.2
+                delay: 0.2,
               },
               {
                 title: "Doctors",
@@ -289,12 +317,12 @@ const Index: React.FC = () => {
                   "Issue secure digital prescriptions",
                   "Verify medication sources",
                   "Monitor patient medication history",
-                  "Reduce medication errors"
+                  "Reduce medication errors",
                 ],
                 cta: "Improve prescribing",
                 color: "from-accent/5 to-accent/10",
-                delay: 0.3
-              }
+                delay: 0.3,
+              },
             ].map((role, index) => (
               <motion.div
                 key={index}
@@ -346,14 +374,17 @@ const Index: React.FC = () => {
                   Ready to secure your pharmaceutical supply chain?
                 </h2>
                 <p className="text-foreground/70 mb-6">
-                  Join the growing network of healthcare professionals using PharmaTrack to ensure medication safety and authenticity.
+                  Join the growing network of healthcare professionals using
+                  PharmaTrack to ensure medication safety and authenticity.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Link to="/signup">
                     <Button size="lg">Get Started</Button>
                   </Link>
                   <Link to="/contact">
-                    <Button size="lg" variant="outline">Contact Sales</Button>
+                    <Button size="lg" variant="outline">
+                      Contact Sales
+                    </Button>
                   </Link>
                 </div>
               </div>
@@ -368,9 +399,12 @@ const Index: React.FC = () => {
                   {[
                     { label: "Tracked Batches", value: "100,000+" },
                     { label: "Verified Transactions", value: "1.2M+" },
-                    { label: "Platform Users", value: "5,000+" }
+                    { label: "Platform Users", value: "5,000+" },
                   ].map((stat, i) => (
-                    <div key={i} className="flex justify-between items-center text-sm">
+                    <div
+                      key={i}
+                      className="flex justify-between items-center text-sm"
+                    >
                       <span className="text-foreground/60">{stat.label}</span>
                       <span className="font-medium">{stat.value}</span>
                     </div>
@@ -410,26 +444,29 @@ const Index: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
-                quote: "PharmaTrack has revolutionized how we manage our pharmaceutical supply chain. The transparency and security it provides is invaluable.",
+                quote:
+                  "PharmaTrack has revolutionized how we manage our pharmaceutical supply chain. The transparency and security it provides is invaluable.",
                 author: "Dr. Sarah Johnson",
                 role: "Chief Pharmacist",
                 company: "MedCare Hospital",
-                gradient: "from-primary/20 to-primary/5"
+                gradient: "from-primary/20 to-primary/5",
               },
               {
-                quote: "Implementation was smooth and the results were immediate. We've seen a 40% reduction in verification time.",
+                quote:
+                  "Implementation was smooth and the results were immediate. We've seen a 40% reduction in verification time.",
                 author: "Michael Chen",
                 role: "Supply Chain Director",
                 company: "Global Pharma Ltd",
-                gradient: "from-accent/20 to-accent/5"
+                gradient: "from-accent/20 to-accent/5",
               },
               {
-                quote: "The real-time tracking and authentication features have helped us eliminate counterfeit products entirely.",
+                quote:
+                  "The real-time tracking and authentication features have helped us eliminate counterfeit products entirely.",
                 author: "Emma Williams",
                 role: "Quality Control Manager",
                 company: "PharmaTech Solutions",
-                gradient: "from-primary/20 to-primary/5"
-              }
+                gradient: "from-primary/20 to-primary/5",
+              },
             ].map((testimonial, index) => (
               <motion.div
                 key={index}
@@ -442,14 +479,23 @@ const Index: React.FC = () => {
               >
                 <div className="flex gap-1 mb-6">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 fill-primary text-primary" />
+                    <Star
+                      key={i}
+                      className="h-5 w-5 fill-primary text-primary"
+                    />
                   ))}
                 </div>
-                <p className="text-foreground/80 mb-6 text-lg italic leading-relaxed">"{testimonial.quote}"</p>
+                <p className="text-foreground/80 mb-6 text-lg italic leading-relaxed">
+                  "{testimonial.quote}"
+                </p>
                 <div className="border-t border-white/20 pt-6">
                   <p className="font-semibold text-lg">{testimonial.author}</p>
-                  <p className="text-sm text-foreground/60">{testimonial.role}</p>
-                  <p className="text-sm text-foreground/60">{testimonial.company}</p>
+                  <p className="text-sm text-foreground/60">
+                    {testimonial.role}
+                  </p>
+                  <p className="text-sm text-foreground/60">
+                    {testimonial.company}
+                  </p>
                 </div>
               </motion.div>
             ))}
@@ -488,22 +534,30 @@ const Index: React.FC = () => {
         <div className="container mx-auto px-6 md:px-8">
           <div className="flex flex-col md:flex-row justify-between mb-8">
             <div className="mb-8 md:mb-0">
-              <h3 className="text-xl font-semibold text-primary mb-4">PharmaTrack</h3>
+              <h3 className="text-xl font-semibold text-primary mb-4">
+                PharmaTrack
+              </h3>
               <p className="text-foreground/60 max-w-xs text-sm">
-                Secure pharmaceutical tracking and verification for the entire supply chain.
+                Secure pharmaceutical tracking and verification for the entire
+                supply chain.
               </p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
               <div>
                 <h4 className="text-sm font-medium mb-4">Product</h4>
                 <ul className="space-y-2">
-                  {["Features", "Security", "Pricing", "Demos"].map((item, i) => (
-                    <li key={i}>
-                      <a href="#" className="text-foreground/60 hover:text-primary text-sm">
-                        {item}
-                      </a>
-                    </li>
-                  ))}
+                  {["Features", "Security", "Pricing", "Demos"].map(
+                    (item, i) => (
+                      <li key={i}>
+                        <a
+                          href="#"
+                          className="text-foreground/60 hover:text-primary text-sm"
+                        >
+                          {item}
+                        </a>
+                      </li>
+                    )
+                  )}
                 </ul>
               </div>
               <div>
@@ -511,7 +565,10 @@ const Index: React.FC = () => {
                 <ul className="space-y-2">
                   {["About", "Blog", "Careers", "Contact"].map((item, i) => (
                     <li key={i}>
-                      <a href="#" className="text-foreground/60 hover:text-primary text-sm">
+                      <a
+                        href="#"
+                        className="text-foreground/60 hover:text-primary text-sm"
+                      >
                         {item}
                       </a>
                     </li>
@@ -521,26 +578,32 @@ const Index: React.FC = () => {
               <div>
                 <h4 className="text-sm font-medium mb-4">Resources</h4>
                 <ul className="space-y-2">
-                  {["Documentation", "Support", "API", "Privacy"].map((item, i) => (
-                    <li key={i}>
-                      <a href="#" className="text-foreground/60 hover:text-primary text-sm">
-                        {item}
-                      </a>
-                    </li>
-                  ))}
+                  {["Documentation", "Support", "API", "Privacy"].map(
+                    (item, i) => (
+                      <li key={i}>
+                        <a
+                          href="#"
+                          className="text-foreground/60 hover:text-primary text-sm"
+                        >
+                          {item}
+                        </a>
+                      </li>
+                    )
+                  )}
                 </ul>
               </div>
             </div>
           </div>
           <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-sm text-foreground/60">
-              &copy; {new Date().getFullYear()} PharmaTrack. All rights reserved.
+              &copy; {new Date().getFullYear()} PharmaTrack. All rights
+              reserved.
             </p>
             <div className="flex space-x-4 mt-4 md:mt-0">
               {["Terms", "Privacy", "Cookies"].map((item, i) => (
-                <a 
-                  key={i} 
-                  href="#" 
+                <a
+                  key={i}
+                  href="#"
                   className="text-sm text-foreground/60 hover:text-primary"
                 >
                   {item}

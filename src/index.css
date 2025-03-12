@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -35,6 +34,36 @@
 
     --radius: 0.75rem;
   }
+
+  .dark {
+    --background: 210 50% 5%;
+    --foreground: 210 40% 98%;
+
+    --card: 210 50% 3%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 210 50% 3%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 100% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 40% 10%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 210 40% 10%;
+    --muted-foreground: 210 30% 70%;
+
+    --accent: 160 60% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 20% 20%;
+    --input: 210 20% 20%;
+    --ring: 210 100% 50%;
+  }
 }
 
 @layer base {
@@ -54,11 +83,11 @@
 
 @layer utilities {
   .glass {
-    @apply bg-white/80 backdrop-blur-md border border-white/40 shadow-glass;
+    @apply bg-background/80 backdrop-blur-md border border-border/40 shadow-glass;
   }
   
   .glass-card {
-    @apply bg-white/90 backdrop-blur-md border border-white/40 shadow-card rounded-xl transition-all duration-300 hover:shadow-glass-hover;
+    @apply bg-background/90 backdrop-blur-md border border-border/40 shadow-card rounded-xl transition-all duration-300 hover:shadow-glass-hover;
   }
 
   .text-balance {

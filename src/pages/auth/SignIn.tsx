@@ -21,6 +21,7 @@ import { AtSign, Lock } from "lucide-react";
 import UserTypeSelector from "@/components/shared/UserTypeSelector";
 import { UserRole } from "@/utils/types";
 import { supabase } from "@/lib/supabase";
+import { fetchUserById } from "@/lib/database";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -53,6 +54,7 @@ const SignIn: React.FC = () => {
     setIsLoading(true);
 
     try {
+      // Authenticate with Supabase
       const { data: authData, error } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
@@ -61,17 +63,31 @@ const SignIn: React.FC = () => {
       if (error) throw error;
 
       if (authData.user) {
-        // Store user role in Supabase user metadata
+        // Fetch the user's actual role from the database
+        const userDetails = await fetchUserById(authData.user.id);
+
+        if (!userDetails) {
+          throw new Error("User details not found");
+        }
+
+        // Check if the selected role matches the user's actual role
+        if (userDetails.role !== selectedRole) {
+          throw new Error(
+            `You do not have permissions to access the ${selectedRole} dashboard. Your role is ${userDetails.role}.`
+          );
+        }
+
+        // Store the verified role in user metadata
         await supabase.auth.updateUser({
-          data: { role: selectedRole },
+          data: { role: userDetails.role },
         });
 
         toast.success("Successfully signed in", {
           description: "Welcome back to PharmaTrack",
         });
 
-        // Redirect to dashboard based on role
-        navigate(`/${selectedRole.toLowerCase()}/dashboard`);
+        // Redirect to dashboard based on verified role
+        navigate(`/dashboard/${userDetails.role.toLowerCase()}`);
       }
     } catch (error: any) {
       console.error("Error signing in:", error);
@@ -79,6 +95,14 @@ const SignIn: React.FC = () => {
         description:
           error.message || "Please check your credentials and try again.",
       });
+
+      // Sign out the user if authentication succeeded but role verification failed
+      if (
+        error.message &&
+        error.message.includes("You do not have permissions")
+      ) {
+        await supabase.auth.signOut();
+      }
     } finally {
       setIsLoading(false);
     }
