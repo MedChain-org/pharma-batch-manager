@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
@@ -8,13 +7,15 @@ interface FormButtonsProps {
   isLoading: boolean;
   onBack: () => void;
   hasSelectedRole: boolean;
+  isValid: boolean;
 }
 
 const FormButtons: React.FC<FormButtonsProps> = ({ 
   currentStep, 
   isLoading, 
   onBack,
-  hasSelectedRole
+  hasSelectedRole,
+  isValid
 }) => {
   return (
     <div className="flex flex-col-reverse sm:flex-row sm:justify-between sm:space-x-2">

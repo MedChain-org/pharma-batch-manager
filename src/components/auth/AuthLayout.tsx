@@ -32,7 +32,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({
 
         <div className="relative z-10 flex flex-col justify-center items-center w-full p-12">
           <div className="text-4xl font-bold text-primary mb-8">
-            PharmaTrack
+            MedChain
           </div>
 
           <div className="glass-card max-w-md p-8 mb-8">

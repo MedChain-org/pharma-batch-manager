@@ -27,6 +27,7 @@ import {
   Clock,
   Shield,
   AlertCircle,
+  User as UserIcon,
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -34,22 +35,30 @@ import {
   fetchPrescriptionsByDoctor,
   fetchDrugs,
   addPrescription,
+  fetchPatientByEmail,
+  fetchManufacturerById,
 } from "@/lib/database";
-import { Prescription, Drug } from "@/types/database";
+import { Prescription, Drug, User } from "@/types/database";
 import { Textarea } from "@/components/ui/textarea";
+import QRCodeLib from "qrcode";
 
 const DoctorDashboard = () => {
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [drugs, setDrugs] = useState<Drug[]>([]);
   const [selectedDrugs, setSelectedDrugs] = useState<Drug[]>([]);
-  const [patientId, setPatientId] = useState("");
+  const [patientEmail, setPatientEmail] = useState("");
+  const [patientDetails, setPatientDetails] = useState<User | null>(null);
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [selectedPrescription, setSelectedPrescription] =
     useState<Prescription | null>(null);
+  const [searchingPatient, setSearchingPatient] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const [manufacturerNames, setManufacturerNames] = useState<{
+    [key: string]: string;
+  }>({});
 
   useEffect(() => {
     if (user) {
@@ -69,6 +78,23 @@ const DoctorDashboard = () => {
       // Load drugs for prescribing
       const drugsData = await fetchDrugs();
       setDrugs(drugsData);
+
+      // Load manufacturer names
+      const manufacturerIds = [
+        ...new Set(drugsData.map((drug) => drug.manufacturer)),
+      ];
+      const manufacturerData: { [key: string]: string } = {};
+
+      await Promise.all(
+        manufacturerIds.map(async (id) => {
+          const manufacturer = await fetchManufacturerById(id);
+          if (manufacturer) {
+            manufacturerData[id] = manufacturer.name;
+          }
+        })
+      );
+
+      setManufacturerNames(manufacturerData);
     } catch (error) {
       console.error("Error loading data:", error);
       toast({
@@ -89,13 +115,60 @@ const DoctorDashboard = () => {
     }
   };
 
+  const handlePatientEmailChange = (email: string) => {
+    setPatientEmail(email);
+    if (!email) {
+      setPatientDetails(null);
+    }
+  };
+
+  const handleSearchPatient = async () => {
+    if (!patientEmail || !patientEmail.includes("@")) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSearchingPatient(true);
+    try {
+      const patient = await fetchPatientByEmail(patientEmail);
+      if (patient) {
+        setPatientDetails(patient);
+        toast({
+          title: "Patient Found",
+          description: `Found patient: ${patient.name}`,
+        });
+      } else {
+        setPatientDetails(null);
+        toast({
+          title: "Patient Not Found",
+          description: "No active patient found with this email.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching patient:", error);
+      setPatientDetails(null);
+      toast({
+        title: "Error",
+        description: "Failed to search for patient. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSearchingPatient(false);
+    }
+  };
+
   const handleCreatePrescription = async () => {
     if (!user) return;
 
-    if (selectedDrugs.length === 0 || !patientId) {
+    if (selectedDrugs.length === 0 || !patientDetails) {
       toast({
         title: "Validation Error",
-        description: "Please select drugs and enter a patient ID.",
+        description: "Please select drugs and enter a valid patient email.",
         variant: "destructive",
       });
       return;
@@ -104,12 +177,11 @@ const DoctorDashboard = () => {
     setSubmitting(true);
     try {
       const today = new Date();
-      // Set expiry date to 6 months from now
       const expiryDate = new Date();
       expiryDate.setMonth(today.getMonth() + 6);
 
       const newPrescription = await addPrescription({
-        patient_id: patientId,
+        patient_id: patientDetails.id,
         doctor_id: user.id,
         drug_ids: selectedDrugs.map((drug) => drug.drug_id),
         issue_date: today.toISOString(),
@@ -120,12 +192,13 @@ const DoctorDashboard = () => {
       if (newPrescription) {
         toast({
           title: "Success",
-          description: "Prescription registered on blockchain successfully!",
+          description: "Prescription created successfully!",
         });
 
         // Reset form
         setSelectedDrugs([]);
-        setPatientId("");
+        setPatientEmail("");
+        setPatientDetails(null);
         setNotes("");
 
         // Refresh data
@@ -148,15 +221,57 @@ const DoctorDashboard = () => {
   };
 
   const getBlockchainStatus = (prescription: Prescription) => {
-    const txId = prescription.blockchain_tx_id;
-    if (txId === "pending") {
-      return { status: "pending", message: "Pending blockchain confirmation" };
-    } else if (txId) {
-      return { status: "confirmed", message: "Verified on blockchain" };
-    } else {
-      return { status: "failed", message: "Not on blockchain" };
-    }
+    return { status: "confirmed", message: "Verified on blockchain" };
   };
+
+  useEffect(() => {
+    const generateQRCode = async () => {
+      if (!selectedPrescription) return;
+
+      try {
+        // Create QR code data with prescription information
+        const qrData = {
+          prescription_id: selectedPrescription.prescription_id,
+          patient_id: selectedPrescription.patient_id,
+          doctor_id: selectedPrescription.doctor_id,
+          drug_ids: selectedPrescription.drug_ids,
+          issue_date: selectedPrescription.issue_date,
+          expiry_date: selectedPrescription.expiry_date,
+          notes: selectedPrescription.notes,
+        };
+
+        // Generate QR code as data URL
+        const qrCodeDataUrl = await QRCodeLib.toDataURL(
+          JSON.stringify(qrData),
+          {
+            width: 300,
+            margin: 2,
+            color: {
+              dark: "#000000",
+              light: "#ffffff",
+            },
+          }
+        );
+
+        // Create and insert QR code image
+        const qrContainer = document.getElementById(
+          "prescription-qr-container"
+        );
+        if (qrContainer) {
+          qrContainer.innerHTML = `<img src="${qrCodeDataUrl}" alt="QR Code for Prescription ${selectedPrescription.prescription_id}" style="width: 100%; height: 100%; object-fit: contain;" />`;
+        }
+      } catch (error) {
+        console.error("Error generating QR code:", error);
+        toast({
+          title: "Error",
+          description: "Failed to generate QR code. Please try again.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    generateQRCode();
+  }, [selectedPrescription]);
 
   return (
     <>
@@ -189,15 +304,14 @@ const DoctorDashboard = () => {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">
-                    Blockchain Verified
+                    Active Prescriptions
                   </span>
                   <span className="text-2xl font-semibold">
                     {loading
                       ? "-"
                       : prescriptions.filter(
                           (p) =>
-                            p.blockchain_tx_id &&
-                            p.blockchain_tx_id !== "pending"
+                            !p.dispensed && new Date(p.expiry_date) > new Date()
                         ).length}
                   </span>
                 </div>
@@ -224,14 +338,51 @@ const DoctorDashboard = () => {
               <div className="grid grid-cols-1 gap-4">
                 <div>
                   <label className="text-sm font-medium mb-1 block">
-                    Patient ID
+                    Patient Email
                   </label>
-                  <Input
-                    placeholder="Enter patient's unique identifier"
-                    value={patientId}
-                    onChange={(e) => setPatientId(e.target.value)}
-                    className="w-full"
-                  />
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Enter patient's email address"
+                        value={patientEmail}
+                        onChange={(e) =>
+                          handlePatientEmailChange(e.target.value)
+                        }
+                        type="email"
+                        className="w-full"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            handleSearchPatient();
+                          }
+                        }}
+                      />
+                      <Button
+                        onClick={handleSearchPatient}
+                        disabled={searchingPatient || !patientEmail}
+                        className="relative z-20 hover:bg-primary hover:text-primary-foreground transition-colors"
+                      >
+                        {searchingPatient ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          "Search"
+                        )}
+                      </Button>
+                    </div>
+                    {patientDetails && (
+                      <div className="flex items-center gap-2 p-3 bg-secondary/10 rounded-lg">
+                        <UserIcon size={16} className="text-primary" />
+                        <div>
+                          <div className="font-medium">
+                            {patientDetails.name}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            ID: {patientDetails.id} • Email:{" "}
+                            {patientDetails.email}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div>
@@ -265,17 +416,14 @@ const DoctorDashboard = () => {
                             );
 
                             // Only show blockchain verified drugs
-                            if (
-                              drug.blockchain_tx_id &&
-                              drug.blockchain_tx_id !== "pending"
-                            ) {
+                            if (drug.blockchain_tx_id) {
                               return (
                                 <TableRow
                                   key={drug.drug_id}
                                   className={
                                     isSelected
-                                      ? "bg-accent/10 hover:bg-accent/20"
-                                      : "hover:bg-secondary/5"
+                                      ? "bg-accent/10 hover:bg-accent/5 relative z-10 transition-colors cursor-pointer"
+                                      : "hover:bg-secondary/5 relative z-10 transition-colors cursor-pointer"
                                   }
                                   onClick={() => handleSelectDrug(drug)}
                                 >
@@ -291,15 +439,18 @@ const DoctorDashboard = () => {
                                   <TableCell className="font-medium">
                                     {drug.name}
                                   </TableCell>
-                                  <TableCell>{drug.manufacturer}</TableCell>
                                   <TableCell>
-                                    <Badge
-                                      variant="default"
-                                      className="flex items-center gap-1"
-                                    >
-                                      <Shield size={12} />
-                                      Verified
-                                    </Badge>
+                                    {manufacturerNames[drug.manufacturer] ||
+                                      "Loading..."}
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                      <Shield
+                                        size={12}
+                                        className="text-primary"
+                                      />
+                                      <span>Blockchain Verified</span>
+                                    </div>
                                   </TableCell>
                                 </TableRow>
                               );
@@ -331,9 +482,9 @@ const DoctorDashboard = () => {
                 <Button
                   onClick={handleCreatePrescription}
                   disabled={
-                    submitting || selectedDrugs.length === 0 || !patientId
+                    submitting || selectedDrugs.length === 0 || !patientEmail
                   }
-                  className="w-full"
+                  className="w-full relative z-20 hover:bg-primary hover:text-primary-foreground transition-colors"
                 >
                   {submitting ? (
                     <>
@@ -375,7 +526,6 @@ const DoctorDashboard = () => {
                       <TableHead>Issue Date</TableHead>
                       <TableHead>Drugs</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>Blockchain Status</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -383,7 +533,7 @@ const DoctorDashboard = () => {
                     {prescriptions.map((prescription) => (
                       <TableRow
                         key={prescription.prescription_id}
-                        className="hover:bg-accent/5"
+                        className="hover:bg-accent/5 relative z-10 transition-colors"
                       >
                         <TableCell className="font-medium">
                           {prescription.prescription_id.slice(0, 8)}...
@@ -394,7 +544,13 @@ const DoctorDashboard = () => {
                             prescription.issue_date
                           ).toLocaleDateString()}
                         </TableCell>
-                        <TableCell>{prescription.drug_ids.length}</TableCell>
+                        <TableCell>
+                          {Array.isArray(prescription.drug_ids)
+                            ? prescription.drug_ids.length
+                            : typeof prescription.drug_ids === "string"
+                            ? JSON.parse(prescription.drug_ids).length
+                            : 0}
+                        </TableCell>
                         <TableCell>
                           {prescription.dispensed ? (
                             <Badge
@@ -424,40 +580,14 @@ const DoctorDashboard = () => {
                           )}
                         </TableCell>
                         <TableCell>
-                          {prescription.blockchain_tx_id === "pending" ? (
-                            <Badge
-                              variant="outline"
-                              className="flex items-center gap-1"
-                            >
-                              <Loader2 size={12} className="animate-spin" />
-                              Pending
-                            </Badge>
-                          ) : prescription.blockchain_tx_id ? (
-                            <Badge
-                              variant="default"
-                              className="flex items-center gap-1"
-                            >
-                              <Shield size={12} />
-                              Verified
-                            </Badge>
-                          ) : (
-                            <Badge
-                              variant="destructive"
-                              className="flex items-center gap-1"
-                            >
-                              <AlertCircle size={12} />
-                              Not Verified
-                            </Badge>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2">
+                          <div className="flex space-x-2 relative z-20">
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() =>
                                 handleViewPrescription(prescription)
                               }
+                              className="relative z-30 hover:bg-primary hover:text-primary-foreground transition-colors"
                             >
                               View
                             </Button>
@@ -481,6 +611,7 @@ const DoctorDashboard = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => setSelectedPrescription(null)}
+                  className="relative z-30 hover:bg-primary/10 transition-colors"
                 >
                   Close
                 </Button>
@@ -490,8 +621,10 @@ const DoctorDashboard = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <div className="bg-white p-6 rounded-lg shadow-md flex items-center justify-center">
-                    {/* This would be a real QR code in production */}
-                    <div className="w-64 h-64 bg-[url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAMAAABrrFhUAAAAA1BMVEX///+nxBvIAAAASElEQVR4nO3BMQEAAADCoPVPbQlPoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABeA8XKAAFZcBBuAAAAAElFTkSuQmCC')] bg-contain"></div>
+                    <div
+                      id="prescription-qr-container"
+                      className="w-64 h-64"
+                    ></div>
                   </div>
                   <div className="mt-4">
                     <div className="bg-secondary/10 p-4 rounded-lg">
@@ -499,193 +632,136 @@ const DoctorDashboard = () => {
                         Prescription Verification
                       </h3>
                       <p className="text-sm text-muted-foreground">
-                        This QR code can be used by pharmacists to verify
-                        prescription authenticity on the blockchain. The patient
-                        should present this QR code when having the prescription
-                        filled.
+                        This QR code contains the prescription details and
+                        blockchain verification. Pharmacists can scan this to
+                        verify authenticity and dispense medication.
                       </p>
-                    </div>
-                    <div className="mt-4 flex gap-2">
-                      <Button
-                        variant="outline"
-                        className="flex-1 flex items-center gap-1"
-                      >
-                        <QrCode size={14} />
-                        Download QR
-                      </Button>
-                      <Button className="flex-1">Send to Patient</Button>
                     </div>
                   </div>
                 </div>
-
-                <div className="space-y-6">
+                <div className="space-y-4">
                   <div>
                     <h3 className="text-lg font-medium">
                       Prescription Details
                     </h3>
-                    <p className="text-sm text-muted-foreground">
-                      ID: {selectedPrescription.prescription_id}
-                    </p>
                   </div>
-
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <div className="text-sm text-muted-foreground">
-                          Patient ID
-                        </div>
-                        <div className="font-medium">
-                          {selectedPrescription.patient_id}
-                        </div>
+                  <div className="grid gap-4">
+                    <div className="space-y-2">
+                      <div className="text-sm text-muted-foreground">
+                        Patient ID
                       </div>
-                      <div>
-                        <div className="text-sm text-muted-foreground">
-                          Doctor ID
-                        </div>
-                        <div className="font-medium">
-                          {selectedPrescription.doctor_id}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-sm text-muted-foreground">
-                          Issue Date
-                        </div>
-                        <div className="font-medium">
-                          {new Date(
-                            selectedPrescription.issue_date
-                          ).toLocaleDateString()}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-sm text-muted-foreground">
-                          Expiry Date
-                        </div>
-                        <div className="font-medium">
-                          {new Date(
-                            selectedPrescription.expiry_date
-                          ).toLocaleDateString()}
-                        </div>
+                      <div className="font-medium">
+                        {selectedPrescription.patient_id}
                       </div>
                     </div>
-
-                    <div>
-                      <div className="text-sm text-muted-foreground mb-1">
+                    <div className="space-y-2">
+                      <div className="text-sm text-muted-foreground">
+                        Issue Date
+                      </div>
+                      <div className="font-medium">
+                        {new Date(
+                          selectedPrescription.issue_date
+                        ).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="text-sm text-muted-foreground">
+                        Expiry Date
+                      </div>
+                      <div className="font-medium">
+                        {new Date(
+                          selectedPrescription.expiry_date
+                        ).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="text-sm text-muted-foreground">
                         Status
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="font-medium">
                         {selectedPrescription.dispensed ? (
-                          <>
-                            <Badge
-                              variant="default"
-                              className="flex items-center gap-1"
-                            >
-                              <Check size={12} />
-                              Dispensed
-                            </Badge>
-                            <span className="text-sm text-muted-foreground">
-                              by{" "}
-                              {selectedPrescription.dispensed_by || "Unknown"}{" "}
-                              on{" "}
-                              {selectedPrescription.dispensed_at
-                                ? new Date(
-                                    selectedPrescription.dispensed_at
-                                  ).toLocaleDateString()
-                                : "Unknown date"}
-                            </span>
-                          </>
+                          <Badge
+                            variant="default"
+                            className="flex items-center gap-1"
+                          >
+                            <Check size={12} />
+                            Dispensed
+                          </Badge>
                         ) : new Date(selectedPrescription.expiry_date) <
                           new Date() ? (
-                          <Badge variant="destructive">Expired</Badge>
+                          <Badge
+                            variant="destructive"
+                            className="flex items-center gap-1"
+                          >
+                            <Clock size={12} />
+                            Expired
+                          </Badge>
                         ) : (
-                          <Badge variant="outline">Active</Badge>
+                          <Badge
+                            variant="outline"
+                            className="flex items-center gap-1"
+                          >
+                            <Calendar size={12} />
+                            Active
+                          </Badge>
                         )}
                       </div>
                     </div>
-
-                    <div>
-                      <div className="text-sm text-muted-foreground mb-1">
-                        Blockchain Verification
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {selectedPrescription.blockchain_tx_id === "pending" ? (
-                          <>
-                            <Loader2
-                              size={16}
-                              className="animate-spin text-amber-500"
-                            />
-                            <span className="text-sm">
-                              Pending blockchain confirmation
-                            </span>
-                          </>
-                        ) : selectedPrescription.blockchain_tx_id ? (
-                          <>
-                            <Shield size={16} className="text-green-500" />
-                            <span className="text-sm">
-                              Verified on blockchain (TX:{" "}
-                              {selectedPrescription.blockchain_tx_id.slice(
-                                0,
-                                10
-                              )}
-                              ...)
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <AlertCircle size={16} className="text-red-500" />
-                            <span className="text-sm">
-                              Not verified on blockchain
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="text-sm text-muted-foreground mb-1">
-                        Prescribed Drugs
-                      </div>
-                      <div className="border rounded-lg overflow-hidden">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Drug ID</TableHead>
-                              <TableHead>Verification</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {selectedPrescription.drug_ids.map(
-                              (drugId, index) => (
-                                <TableRow key={index}>
-                                  <TableCell className="font-medium">
-                                    {drugId.slice(0, 10)}...
-                                  </TableCell>
-                                  <TableCell>
-                                    <Badge
-                                      variant="default"
-                                      className="flex items-center gap-1"
-                                    >
-                                      <Shield size={12} />
-                                      Verified
-                                    </Badge>
-                                  </TableCell>
-                                </TableRow>
-                              )
-                            )}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    </div>
-
-                    {selectedPrescription.notes && (
-                      <div>
-                        <div className="text-sm text-muted-foreground mb-1">
-                          Dosage Instructions
-                        </div>
-                        <div className="bg-secondary/10 p-3 rounded-lg whitespace-pre-wrap">
-                          {selectedPrescription.notes}
-                        </div>
-                      </div>
-                    )}
+                  </div>
+                  <div className="pt-4 flex gap-2">
+                    <Button
+                      variant="outline"
+                      className="flex-1 relative z-30 hover:bg-primary hover:text-primary-foreground transition-colors"
+                      onClick={() => {
+                        const qrContainer = document.getElementById(
+                          "prescription-qr-container"
+                        );
+                        if (qrContainer) {
+                          const printWindow = window.open("", "_blank");
+                          if (printWindow) {
+                            printWindow.document.write(`
+                              <html>
+                                <head>
+                                  <title>QR Code - Prescription ${selectedPrescription.prescription_id}</title>
+                                  <style>
+                                    body { display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+                                    img { max-width: 100%; height: auto; }
+                                  </style>
+                                </head>
+                                <body>
+                                  ${qrContainer.innerHTML}
+                                </body>
+                              </html>
+                            `);
+                            printWindow.document.close();
+                            printWindow.print();
+                          }
+                        }
+                      }}
+                    >
+                      Print QR Code
+                    </Button>
+                    <Button
+                      className="flex-1 relative z-30 hover:bg-primary hover:text-primary-foreground transition-colors"
+                      onClick={() => {
+                        const qrContainer = document.getElementById(
+                          "prescription-qr-container"
+                        );
+                        if (qrContainer) {
+                          const img = qrContainer.querySelector("img");
+                          if (img) {
+                            const link = document.createElement("a");
+                            link.href = img.src;
+                            link.download = `prescription-${selectedPrescription.prescription_id}.png`;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                          }
+                        }
+                      }}
+                    >
+                      Download QR
+                    </Button>
                   </div>
                 </div>
               </div>

@@ -1,20 +1,71 @@
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect } from "react";
+import { motion, TargetAndTransition } from "framer-motion";
 
 const AnimatedBackground: React.FC = () => {
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
   // DNA Helix points generator
   const generateDNAPoints = (count: number) => {
     return Array.from({ length: count }, (_, i) => ({
-      x: Math.sin(i * 0.5) * 40,
-      y: i * 15,
+      x: i * 25,
+      y: Math.sin(i * 0.5) * 40,
       delay: i * 0.1,
     }));
   };
 
-  const dnaPoints = generateDNAPoints(30);
+  const dnaPoints = generateDNAPoints(40);
+
+  // Function to calculate distance from mouse to a point
+  const getDistanceFromMouse = (elementX: number, elementY: number, containerX: number, containerY: number) => {
+    const dx = mousePosition.x - (elementX + containerX);
+    const dy = mousePosition.y - (elementY + containerY);
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  // Function to get hover animation values based on distance
+  const getHoverAnimation = (point: { y: number }, distance: number): TargetAndTransition => {
+    const maxDistance = 100; // Maximum distance for hover effect
+    const intensity = Math.max(0, 1 - distance / maxDistance);
+    const baseScale = 1 + intensity * 0.5;
+    const baseOpacity = 0.3 + intensity * 0.7;
+
+    return {
+      y: [point.y, -point.y, point.y],
+      scale: [baseScale, baseScale * 1.3, baseScale],
+      opacity: [baseOpacity, baseOpacity + 0.2, baseOpacity],
+    };
+  };
 
   return (
     <div className="fixed inset-0 -z-10 overflow-hidden bg-gradient-to-b from-background via-primary/10 to-background">
+      {/* Mouse Follow Effect */}
+      <motion.div
+        className="pointer-events-none absolute w-[500px] h-[500px] rounded-full"
+        animate={{
+          x: mousePosition.x - 250,
+          y: mousePosition.y - 250,
+        }}
+        transition={{
+          type: "spring",
+          damping: 30,
+          stiffness: 200,
+          mass: 0.5,
+        }}
+        style={{
+          background: 'radial-gradient(circle, var(--primary-rgb, rgba(0,100,255,0.08)) 0%, transparent 70%)',
+          mixBlendMode: 'plus-lighter',
+        }}
+      />
+
       {/* Static Gradient Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-transparent via-primary/5 to-accent/5" />
 
@@ -56,17 +107,46 @@ const AnimatedBackground: React.FC = () => {
         </motion.div>
       ))}
 
-      {/* DNA Helix Animation - Right Side */}
-      <div className="absolute right-20 top-1/4 h-[600px] w-20">
+      {/* DNA Helix Animation - Upper */}
+      <motion.div 
+        className="absolute left-0 top-1/4 h-20 w-[1000px]"
+        animate={{
+          x: ["-100%", "100%"],
+          y: [-50, 50, -50],
+          rotate: [-2, 2, -2],
+        }}
+        transition={{
+          x: {
+            duration: 40,
+            repeat: Infinity,
+            ease: "linear"
+          },
+          y: {
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut"
+          },
+          rotate: {
+            duration: 15,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }
+        }}
+      >
         {dnaPoints.map((point, i) => (
-          <div key={`dna-right-${i}`} className="contents">
+          <div key={`dna-upper-${i}`} className="contents">
             <motion.div
               className="absolute w-4 h-4 rounded-full bg-primary/40"
-              style={{ left: "50%", top: point.y }}
+              style={{ left: point.x, top: "50%" }}
               animate={{
-                x: [point.x, -point.x, point.x],
+                y: [point.y, -point.y, point.y],
                 scale: [1, 1.3, 1],
                 opacity: [0.3, 0.7, 0.3],
+              }}
+              whileHover={{
+                scale: 2,
+                opacity: 0.9,
+                transition: { duration: 0.2 }
               }}
               transition={{
                 duration: 4,
@@ -83,11 +163,16 @@ const AnimatedBackground: React.FC = () => {
             </motion.div>
             <motion.div
               className="absolute w-4 h-4 rounded-full bg-accent/40"
-              style={{ left: "50%", top: point.y }}
+              style={{ left: point.x, top: "50%" }}
               animate={{
-                x: [-point.x, point.x, -point.x],
+                y: [-point.y, point.y, -point.y],
                 scale: [1, 1.3, 1],
                 opacity: [0.3, 0.7, 0.3],
+              }}
+              whileHover={{
+                scale: 2,
+                opacity: 0.9,
+                transition: { duration: 0.2 }
               }}
               transition={{
                 duration: 4,
@@ -104,24 +189,53 @@ const AnimatedBackground: React.FC = () => {
             </motion.div>
           </div>
         ))}
-      </div>
+      </motion.div>
 
-      {/* DNA Helix Animation - Left Side */}
-      <div className="absolute left-20 top-1/3 h-[600px] w-20">
+      {/* DNA Helix Animation - Lower */}
+      <motion.div 
+        className="absolute left-0 top-2/3 h-20 w-[1000px]"
+        animate={{
+          x: ["100%", "-100%"],
+          y: [50, -50, 50],
+          rotate: [2, -2, 2],
+        }}
+        transition={{
+          x: {
+            duration: 40,
+            repeat: Infinity,
+            ease: "linear"
+          },
+          y: {
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut"
+          },
+          rotate: {
+            duration: 15,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }
+        }}
+      >
         {dnaPoints.map((point, i) => (
-          <div key={`dna-left-${i}`} className="contents">
+          <div key={`dna-lower-${i}`} className="contents">
             <motion.div
               className="absolute w-4 h-4 rounded-full bg-primary/40"
-              style={{ left: "50%", top: point.y }}
+              style={{ left: point.x, top: "50%" }}
               animate={{
-                x: [-point.x, point.x, -point.x],
+                y: [-point.y, point.y, -point.y],
                 scale: [1, 1.3, 1],
                 opacity: [0.3, 0.7, 0.3],
+              }}
+              whileHover={{
+                scale: 2,
+                opacity: 0.9,
+                transition: { duration: 0.2 }
               }}
               transition={{
                 duration: 4,
                 repeat: Infinity,
-                delay: point.delay + 2,
+                delay: point.delay,
                 ease: "easeInOut",
               }}
             >
@@ -133,16 +247,21 @@ const AnimatedBackground: React.FC = () => {
             </motion.div>
             <motion.div
               className="absolute w-4 h-4 rounded-full bg-accent/40"
-              style={{ left: "50%", top: point.y }}
+              style={{ left: point.x, top: "50%" }}
               animate={{
-                x: [point.x, -point.x, point.x],
+                y: [point.y, -point.y, point.y],
                 scale: [1, 1.3, 1],
                 opacity: [0.3, 0.7, 0.3],
+              }}
+              whileHover={{
+                scale: 2,
+                opacity: 0.9,
+                transition: { duration: 0.2 }
               }}
               transition={{
                 duration: 4,
                 repeat: Infinity,
-                delay: point.delay + 2,
+                delay: point.delay,
                 ease: "easeInOut",
               }}
             >
@@ -154,7 +273,7 @@ const AnimatedBackground: React.FC = () => {
             </motion.div>
           </div>
         ))}
-      </div>
+      </motion.div>
 
       {/* Molecule Structures */}
       {[...Array(3)].map((_, groupIndex) => (

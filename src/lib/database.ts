@@ -75,6 +75,19 @@ export async function addDrug(drug: Omit<Drug, 'drug_id' | 'timestamp' | 'blockc
 export async function addDrugStatusUpdate(
   statusUpdate: Pick<DrugStatusUpdate, 'drug_id' | 'status' | 'location' | 'updated_by'>
 ) {
+  // Check if user is authenticated
+  const session = await supabase.auth.getSession();
+  if (!session.data.session) {
+    console.error('User not authenticated');
+    return null;
+  }
+
+  // Ensure updated_by matches the authenticated user's ID
+  if (session.data.session.user.id !== statusUpdate.updated_by) {
+    console.error('Updated_by must match the authenticated user');
+    return null;
+  }
+
   const { data, error } = await supabase
     .from('drug_status_updates')
     .insert([
@@ -331,4 +344,38 @@ export async function fetchUsersByRole(role: User['role']) {
   }
   
   return data as User[];
-} 
+}
+
+export async function fetchPatientByEmail(email: string) {
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('email', email)
+    .eq('role', 'patient')
+    .eq('active', true)
+    .single();
+  
+  if (error) {
+    console.error('Error fetching patient:', error);
+    return null;
+  }
+  
+  return data;
+}
+
+export async function fetchManufacturerById(manufacturerId: string) {
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', manufacturerId)
+    .eq('role', 'manufacturer')
+    .eq('active', true)
+    .single();
+  
+  if (error) {
+    console.error('Error fetching manufacturer:', error);
+    return null;
+  }
+  
+  return data as User;
+}

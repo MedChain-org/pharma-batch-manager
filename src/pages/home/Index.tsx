@@ -16,6 +16,10 @@ import {
   Star,
   Users,
   ChevronRight,
+  Building2,
+  Truck,
+  PillIcon,
+  Stethoscope,
 } from "lucide-react";
 
 const Index: React.FC = () => {
@@ -63,9 +67,18 @@ const Index: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1, duration: 0.6 }}
-                className={`text-center p-6 rounded-2xl bg-gradient-to-br ${stat.color} backdrop-blur-lg border border-white/20 shadow-xl`}
+                whileHover={{ 
+                  scale: 1.03,
+                  rotate: [-0.5, 1, -0.5],
+                  transition: { 
+                    duration: 0.3,
+                    rotate: { repeat: Infinity, duration: 2 }
+                  }
+                }}
+                className={`text-center p-6 rounded-2xl bg-gradient-to-br ${stat.color} backdrop-blur-lg border border-white/20 shadow-xl relative overflow-hidden group`}
               >
-                <div className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
+                <div className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2 relative">
                   {stat.value}
                 </div>
                 <div className="text-sm font-medium text-foreground/80">
@@ -98,7 +111,7 @@ const Index: React.FC = () => {
               transition={{ duration: 0.6 }}
               className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
             >
-              How PharmaTrack Works
+              How MedChain Works
             </motion.h2>
           </div>
 
@@ -132,12 +145,22 @@ const Index: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.1 * index, duration: 0.5 }}
-                whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                className={`relative p-8 rounded-2xl bg-gradient-to-br ${step.gradient} backdrop-blur-sm border border-white/20 shadow-xl group`}
+                whileHover={{ 
+                  scale: 1.02,
+                  transition: { duration: 0.2 }
+                }}
+                className={`relative p-8 rounded-2xl bg-gradient-to-br ${step.gradient} backdrop-blur-sm border border-white/20 shadow-xl group hover:shadow-2xl hover:shadow-primary/5`}
               >
-                <div className="absolute -top-4 left-6 bg-gradient-to-r from-primary to-accent w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white shadow-lg transform group-hover:scale-110 transition-transform">
+                <motion.div
+                  className="absolute -top-4 left-6 bg-gradient-to-r from-primary to-accent w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white shadow-lg"
+                  whileHover={{
+                    scale: 1.2,
+                    rotate: 360,
+                    transition: { duration: 0.5 }
+                  }}
+                >
                   {step.step}
-                </div>
+                </motion.div>
                 <h3 className="text-xl font-semibold mt-4 mb-3 flex items-center">
                   {step.title}
                   <ChevronRight className="w-4 h-4 ml-2 opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 transition-all" />
@@ -170,7 +193,7 @@ const Index: React.FC = () => {
               transition={{ duration: 0.6 }}
               className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
             >
-              Why Choose PharmaTrack?
+              Why Choose MedChain?
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -222,12 +245,23 @@ const Index: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.1 * index, duration: 0.5 }}
-                whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                className={`p-8 rounded-2xl bg-gradient-to-br ${feature.gradient} backdrop-blur-sm border border-white/20 shadow-xl group`}
+                whileHover={{ 
+                  scale: 1.02,
+                  transition: { duration: 0.2 }
+                }}
+                className={`p-8 rounded-2xl bg-gradient-to-br ${feature.gradient} backdrop-blur-sm border border-white/20 shadow-xl group hover:shadow-2xl hover:shadow-primary/5 relative overflow-hidden`}
               >
-                <div className="bg-gradient-to-r from-primary to-accent w-14 h-14 rounded-xl flex items-center justify-center mb-6 transform group-hover:scale-110 transition-transform">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
+                <motion.div 
+                  className="bg-gradient-to-r from-primary to-accent w-14 h-14 rounded-xl flex items-center justify-center mb-6"
+                  whileHover={{
+                    scale: 1.1,
+                    rotate: [0, -10, 10, -10, 0],
+                    transition: { duration: 0.5 }
+                  }}
+                >
                   <feature.icon className="h-7 w-7 text-white" />
-                </div>
+                </motion.div>
                 <h3 className="text-xl font-semibold mb-3 flex items-center">
                   {feature.title}
                   <ChevronRight className="w-4 h-4 ml-2 opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 transition-all" />
@@ -240,15 +274,20 @@ const Index: React.FC = () => {
       </section>
 
       {/* User Types Section */}
-      <section className="py-20 bg-gradient-to-b from-white to-secondary/30">
-        <div className="container mx-auto px-6 md:px-8">
+      <section className="py-20 relative overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white via-primary/5 to-secondary/30"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(0,0,0,0.02)_0%,transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(0,0,0,0.02)_0%,transparent_50%)]"></div>
+        
+        <div className="container mx-auto px-6 md:px-8 relative">
           <div className="text-center mb-16">
             <motion.span
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className="inline-block px-3 py-1 mb-4 text-xs font-medium tracking-wider text-primary bg-primary/10 rounded-full"
+              className="inline-block px-4 py-1.5 mb-4 text-xs font-medium tracking-wider text-primary bg-primary/10 rounded-full ring-1 ring-primary/20"
             >
               For Everyone
             </motion.span>
@@ -257,7 +296,7 @@ const Index: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="text-3xl md:text-4xl font-bold mb-4"
+              className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
             >
               Tailored for Every Role
             </motion.h2>
@@ -277,6 +316,7 @@ const Index: React.FC = () => {
             {[
               {
                 title: "Manufacturers",
+                icon: Building2,
                 features: [
                   "Create and manage drug batches",
                   "Track manufacturing processes",
@@ -289,6 +329,7 @@ const Index: React.FC = () => {
               },
               {
                 title: "Distributors",
+                icon: Truck,
                 features: [
                   "Track shipments in real-time",
                   "Verify drug authenticity",
@@ -301,6 +342,7 @@ const Index: React.FC = () => {
               },
               {
                 title: "Pharmacists",
+                icon: PillIcon,
                 features: [
                   "Verify medication authenticity",
                   "Track prescription fulfillment",
@@ -313,6 +355,7 @@ const Index: React.FC = () => {
               },
               {
                 title: "Doctors",
+                icon: Stethoscope,
                 features: [
                   "Issue secure digital prescriptions",
                   "Verify medication sources",
@@ -330,24 +373,57 @@ const Index: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: role.delay, duration: 0.5 }}
-                className="rounded-xl overflow-hidden border border-border shadow-subtle"
+                whileHover={{ 
+                  y: -5,
+                  scale: 1.02,
+                  transition: { duration: 0.2 }
+                }}
+                className="rounded-2xl overflow-hidden border border-border/50 shadow-lg bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:border-primary/20 group relative"
               >
-                <div className={`bg-gradient-to-r ${role.color} p-6`}>
-                  <h3 className="text-xl font-semibold">{role.title}</h3>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
+                <div className={`bg-gradient-to-r ${role.color} p-8 flex items-center gap-4 relative`}>
+                  <motion.div 
+                    className="p-3 bg-white/80 rounded-xl"
+                    whileHover={{
+                      scale: 1.1,
+                      rotate: [0, -10, 10, -10, 0],
+                      transition: { duration: 0.5 }
+                    }}
+                  >
+                    <role.icon className="h-8 w-8 text-primary" />
+                  </motion.div>
+                  <h3 className="text-2xl font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                    {role.title}
+                  </h3>
                 </div>
-                <div className="bg-white p-6">
-                  <ul className="space-y-3 mb-6">
+                <div className="p-8">
+                  <ul className="space-y-4 mb-8">
                     {role.features.map((feature, i) => (
-                      <li key={i} className="flex items-start">
-                        <Check className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
-                        <span className="text-foreground/80">{feature}</span>
-                      </li>
+                      <motion.li 
+                        key={i} 
+                        className="flex items-start group"
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.1 * i + role.delay, duration: 0.3 }}
+                      >
+                        <div className="p-1 rounded-full bg-primary/10 mr-3 group-hover:bg-primary/20 transition-colors">
+                          <Check className="h-5 w-5 text-primary" />
+                        </div>
+                        <span className="text-foreground/80 group-hover:text-foreground transition-colors">
+                          {feature}
+                        </span>
+                      </motion.li>
                     ))}
                   </ul>
                   <Link to="/signup">
-                    <Button variant="outline" className="w-full">
-                      {role.cta}
-                      <ExternalLink className="ml-2 h-4 w-4" />
+                    <Button 
+                      variant="outline" 
+                      className="w-full group hover:bg-primary hover:text-primary-foreground transition-all duration-300"
+                    >
+                      <span className="group-hover:translate-x-1 transition-transform">
+                        {role.cta}
+                      </span>
+                      <ExternalLink className="ml-2 h-4 w-4 group-hover:rotate-45 transition-transform" />
                     </Button>
                   </Link>
                 </div>
@@ -375,7 +451,7 @@ const Index: React.FC = () => {
                 </h2>
                 <p className="text-foreground/70 mb-6">
                   Join the growing network of healthcare professionals using
-                  PharmaTrack to ensure medication safety and authenticity.
+                  MedChain to ensure medication safety and authenticity.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Link to="/signup">
@@ -445,7 +521,7 @@ const Index: React.FC = () => {
             {[
               {
                 quote:
-                  "PharmaTrack has revolutionized how we manage our pharmaceutical supply chain. The transparency and security it provides is invaluable.",
+                  "MedChain has revolutionized how we manage our pharmaceutical supply chain. The transparency and security it provides is invaluable.",
                 author: "Dr. Sarah Johnson",
                 role: "Chief Pharmacist",
                 company: "MedCare Hospital",
@@ -474,9 +550,16 @@ const Index: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.1 * index, duration: 0.5 }}
-                whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                className={`p-8 rounded-2xl bg-gradient-to-br ${testimonial.gradient} backdrop-blur-sm border border-white/20 shadow-xl`}
+                whileHover={{ 
+                  y: -5,
+                  scale: 1.02,
+                  rotateX: 5,
+                  rotateY: 5,
+                  transition: { duration: 0.2 }
+                }}
+                className={`p-8 rounded-2xl bg-gradient-to-br ${testimonial.gradient} backdrop-blur-sm border border-white/20 shadow-xl group hover:shadow-2xl hover:shadow-primary/5 relative overflow-hidden`}
               >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
                 <div className="flex gap-1 mb-6">
                   {[...Array(5)].map((_, i) => (
                     <Star
@@ -535,7 +618,7 @@ const Index: React.FC = () => {
           <div className="flex flex-col md:flex-row justify-between mb-8">
             <div className="mb-8 md:mb-0">
               <h3 className="text-xl font-semibold text-primary mb-4">
-                PharmaTrack
+                MedChain
               </h3>
               <p className="text-foreground/60 max-w-xs text-sm">
                 Secure pharmaceutical tracking and verification for the entire
@@ -596,7 +679,7 @@ const Index: React.FC = () => {
           </div>
           <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-sm text-foreground/60">
-              &copy; {new Date().getFullYear()} PharmaTrack. All rights
+              &copy; {new Date().getFullYear()} MedChain. All rights
               reserved.
             </p>
             <div className="flex space-x-4 mt-4 md:mt-0">

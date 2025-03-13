@@ -31,6 +31,20 @@ const GenerateQR: React.FC = () => {
     }
   }, [user]);
 
+  useEffect(() => {
+    drugs.forEach((drug) => {
+      console.log("Drug:", {
+        drug_id: drug.drug_id,
+        blockchain_tx_id: drug.blockchain_tx_id,
+        generatingQR,
+        isDisabled:
+          generatingQR === drug.drug_id ||
+          !drug.blockchain_tx_id ||
+          drug.blockchain_tx_id === "pending",
+      });
+    });
+  }, [drugs, generatingQR]);
+
   const loadDrugs = async () => {
     if (!user) return;
 
@@ -104,7 +118,7 @@ const GenerateQR: React.FC = () => {
       <div className="p-6 space-y-6 max-w-7xl mx-auto">
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-bold text-gradient">
-            Generate QR Codes
+              QR Codes Generated
           </h1>
           <p className="text-muted-foreground">
             Generate QR codes for your drug batches for authentication and
@@ -129,7 +143,7 @@ const GenerateQR: React.FC = () => {
                 No drug batches found. Add some batches to generate QR codes.
               </div>
             ) : (
-              <div className="rounded-md border">
+              <div className="rounded-md border relative z-10">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -143,7 +157,7 @@ const GenerateQR: React.FC = () => {
                   </TableHeader>
                   <TableBody>
                     {drugs.map((drug) => (
-                      <TableRow key={drug.drug_id}>
+                      <TableRow key={drug.drug_id} className="relative z-10">
                         <TableCell className="font-medium">
                           {drug.name}
                         </TableCell>
@@ -171,7 +185,7 @@ const GenerateQR: React.FC = () => {
                               : "Not Verified"}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right relative z-20">
                           <Button
                             variant="outline"
                             size="sm"
@@ -181,6 +195,13 @@ const GenerateQR: React.FC = () => {
                               !drug.blockchain_tx_id ||
                               drug.blockchain_tx_id === "pending"
                             }
+                            className={`relative z-30 ${
+                              generatingQR === drug.drug_id ||
+                              !drug.blockchain_tx_id ||
+                              drug.blockchain_tx_id === "pending"
+                                ? "opacity-50 cursor-not-allowed"
+                                : "opacity-100 cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                            }`}
                           >
                             {generatingQR === drug.drug_id ? (
                               <>
@@ -190,7 +211,7 @@ const GenerateQR: React.FC = () => {
                             ) : (
                               <>
                                 <Download className="mr-2 h-4 w-4" />
-                                Generate QR
+                                Download QR
                               </>
                             )}
                           </Button>

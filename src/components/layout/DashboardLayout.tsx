@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -116,7 +115,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, userRole })
             isSidebarOpen ? "justify-between w-full" : "justify-center w-full"
           )}>
             {isSidebarOpen ? (
-              <span className="text-lg font-semibold text-primary">PharmaTrack</span>
+              <span className="text-lg font-semibold text-primary">MedChain</span>
             ) : (
               <span className="text-lg font-semibold text-primary">PT</span>
             )}
@@ -157,24 +156,29 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, userRole })
                 key={item.title}
                 to={item.href}
                 className={cn(
-                  "flex items-center px-3 py-2.5 text-sm rounded-md transition-all",
+                  "flex items-center px-3 py-2.5 text-sm rounded-md transition-all duration-200 relative group overflow-hidden",
                   isActive(item.href)
                     ? "bg-primary text-primary-foreground font-medium"
                     : "text-muted-foreground hover:bg-secondary hover:text-foreground",
-                  !isSidebarOpen && "justify-center px-2"
+                  !isSidebarOpen && "justify-center px-2",
+                  "after:absolute after:inset-0 after:bg-gradient-to-r after:from-primary/0 hover:after:from-primary/5 after:to-transparent after:opacity-0 hover:after:opacity-100 after:transition-opacity",
+                  "before:absolute before:inset-y-0 before:left-0 before:w-[2px] before:bg-primary before:scale-y-0 hover:before:scale-y-100 before:transition-transform before:duration-200 before:origin-bottom"
                 )}
               >
-                <item.icon className={cn("h-4 w-4", isSidebarOpen && "mr-3")} />
+                <item.icon className={cn(
+                  "h-4 w-4 transition-transform group-hover:scale-110",
+                  isSidebarOpen && "mr-3"
+                )} />
                 {isSidebarOpen && (
-                  <span className="truncate">{item.title}</span>
+                  <span className="truncate transition-transform group-hover:translate-x-0.5">{item.title}</span>
                 )}
                 {isSidebarOpen && item.badge && (
-                  <span className="ml-auto bg-secondary text-foreground px-1.5 py-0.5 rounded-full text-xs font-medium">
+                  <span className="ml-auto bg-secondary text-foreground px-1.5 py-0.5 rounded-full text-xs font-medium transition-transform group-hover:scale-105">
                     {item.badge}
                   </span>
                 )}
                 {!isSidebarOpen && item.badge && (
-                  <span className="absolute top-0 right-0 w-2 h-2 bg-primary rounded-full"></span>
+                  <span className="absolute top-0 right-0 w-2 h-2 bg-primary rounded-full transition-transform group-hover:scale-125"></span>
                 )}
               </Link>
             ))}
@@ -214,7 +218,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, userRole })
             className="fixed inset-y-0 left-0 z-30 w-64 bg-white border-r border-border shadow-lg md:hidden flex flex-col"
           >
             <div className="flex h-16 items-center justify-between px-4 border-b border-border">
-              <span className="text-lg font-semibold text-primary">PharmaTrack</span>
+              <span className="text-lg font-semibold text-primary">MedChain</span>
               <Button 
                 variant="ghost" 
                 size="icon" 

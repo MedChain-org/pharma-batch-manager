@@ -52,7 +52,6 @@ export interface Prescription {
   dispensed: boolean;
   dispensed_by: string | null;
   dispensed_at: string | null;
-  blockchain_tx_id: string | null;
   notes: string | null;
 }
 

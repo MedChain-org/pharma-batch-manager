@@ -28,6 +28,7 @@ import {
   fetchDrugStatusUpdates,
   addDrugStatusUpdate,
 } from "@/lib/database";
+import QRCodeLib from "qrcode";
 
 const ManufacturerDashboard = () => {
   const [drugs, setDrugs] = useState<Drug[]>([]);
@@ -46,6 +47,53 @@ const ManufacturerDashboard = () => {
       loadDrugs();
     }
   }, [user]);
+
+  useEffect(() => {
+    const generateQRCode = async () => {
+      if (!selectedDrug) return;
+
+      try {
+        // Create QR code data with drug information
+        const qrData = {
+          drug_id: selectedDrug.drug_id,
+          name: selectedDrug.name,
+          manufacturer: selectedDrug.manufacturer,
+          batch_number: selectedDrug.batch_number,
+          manufacture_date: selectedDrug.manufacture_date,
+          expiry_date: selectedDrug.expiry_date,
+          blockchain_tx_id: selectedDrug.blockchain_tx_id,
+        };
+
+        // Generate QR code as data URL
+        const qrCodeDataUrl = await QRCodeLib.toDataURL(
+          JSON.stringify(qrData),
+          {
+            width: 300,
+            margin: 2,
+            color: {
+              dark: "#000000",
+              light: "#ffffff",
+            },
+          }
+        );
+
+        // Create and insert QR code image
+        const qrContainer = document.getElementById("qr-code-container");
+        if (qrContainer) {
+          qrContainer.innerHTML = `<img src="${qrCodeDataUrl}" alt="QR Code for ${selectedDrug.name}" style="width: 100%; height: 100%; object-fit: contain;" />`;
+        }
+      } catch (error) {
+        console.error("Error generating QR code:", error);
+        toast({
+          title: "Error",
+          description: "Failed to generate QR code. Please try again.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    generateQRCode();
+  }, [selectedDrug]);
 
   const loadDrugs = async () => {
     if (!user) return;
@@ -329,7 +377,7 @@ const ManufacturerDashboard = () => {
                 No drugs found. Add your first drug batch above.
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto relative z-10">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -351,7 +399,7 @@ const ManufacturerDashboard = () => {
                       return (
                         <TableRow
                           key={drug.drug_id}
-                          className="hover:bg-accent/5"
+                          className="hover:bg-accent/5 relative z-10 transition-colors"
                         >
                           <TableCell className="font-medium">
                             {drug.name}
@@ -371,11 +419,12 @@ const ManufacturerDashboard = () => {
                           <TableCell>
                             <BlockchainStatusBadge drug={drug} />
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="relative z-20">
                             <Button
+                              type="button"
                               variant="outline"
                               size="sm"
-                              className="flex items-center gap-1"
+                              className="flex items-center gap-1 relative z-30 hover:bg-primary hover:text-primary-foreground transition-colors"
                               onClick={() => handleGenerateQR(drug)}
                             >
                               <QrCode size={14} />
@@ -409,8 +458,7 @@ const ManufacturerDashboard = () => {
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row gap-6 items-center">
                 <div className="bg-white p-6 rounded-lg shadow-md flex items-center justify-center">
-                  {/* This would be a real QR code in production */}
-                  <div className="w-48 h-48 bg-[url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAMAAABrrFhUAAAAA1BMVEX///+nxBvIAAAASElEQVR4nO3BMQEAAADCoPVPbQlPoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABeA8XKAAFZcBBuAAAAAElFTkSuQmCC')] bg-contain"></div>
+                  <div id="qr-code-container" className="w-48 h-48"></div>
                 </div>
 
                 <div className="flex-1 space-y-4">
@@ -481,10 +529,57 @@ const ManufacturerDashboard = () => {
                   </div>
 
                   <div className="pt-4 flex gap-2">
-                    <Button variant="outline" className="flex-1">
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => {
+                        const qrContainer =
+                          document.getElementById("qr-code-container");
+                        if (qrContainer) {
+                          const printWindow = window.open("", "_blank");
+                          if (printWindow) {
+                            printWindow.document.write(`
+                              <html>
+                                <head>
+                                  <title>QR Code - ${selectedDrug.name}</title>
+                                  <style>
+                                    body { display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+                                    img { max-width: 100%; height: auto; }
+                                  </style>
+                                </head>
+                                <body>
+                                  ${qrContainer.innerHTML}
+                                </body>
+                              </html>
+                            `);
+                            printWindow.document.close();
+                            printWindow.print();
+                          }
+                        }
+                      }}
+                    >
                       Print QR Code
                     </Button>
-                    <Button className="flex-1">Download for Package</Button>
+                    <Button
+                      className="flex-1"
+                      onClick={async () => {
+                        const qrContainer =
+                          document.getElementById("qr-code-container");
+                        if (qrContainer) {
+                          const img = qrContainer.querySelector("img");
+                          if (img) {
+                            const link = document.createElement("a");
+                            link.href = img.src;
+                            link.download = `qr-${selectedDrug.name}-${selectedDrug.batch_number}.png`;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                          }
+                        }
+                      }}
+                    >
+                      Download for Package
+                    </Button>
                   </div>
 
                   <div className="bg-secondary/10 p-4 rounded-lg">
