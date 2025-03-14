@@ -276,9 +276,9 @@ const Index: React.FC = () => {
       {/* User Types Section */}
       <section className="py-20 relative overflow-hidden">
         {/* Background Elements */}
-        <div className="absolute inset-0 bg-gradient-to-b from-white via-primary/5 to-secondary/30"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(0,0,0,0.02)_0%,transparent_50%)]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(0,0,0,0.02)_0%,transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-accent/5"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(0,145,255,0.03)_0%,transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(0,199,162,0.03)_0%,transparent_50%)]"></div>
         
         <div className="container mx-auto px-6 md:px-8 relative">
           <div className="text-center mb-16">
@@ -378,12 +378,12 @@ const Index: React.FC = () => {
                   scale: 1.02,
                   transition: { duration: 0.2 }
                 }}
-                className="rounded-2xl overflow-hidden border border-border/50 shadow-lg bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:border-primary/20 group relative"
+                className="rounded-2xl overflow-hidden border border-border/50 shadow-lg bg-background/60 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:border-primary/20 group relative"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
                 <div className={`bg-gradient-to-r ${role.color} p-8 flex items-center gap-4 relative`}>
                   <motion.div 
-                    className="p-3 bg-white/80 rounded-xl"
+                    className="p-3 bg-background/80 backdrop-blur-md rounded-xl"
                     whileHover={{
                       scale: 1.1,
                       rotate: [0, -10, 10, -10, 0],
@@ -396,7 +396,7 @@ const Index: React.FC = () => {
                     {role.title}
                   </h3>
                 </div>
-                <div className="p-8">
+                <div className="p-8 bg-background/40 backdrop-blur-sm">
                   <ul className="space-y-4 mb-8">
                     {role.features.map((feature, i) => (
                       <motion.li 
@@ -434,59 +434,110 @@ const Index: React.FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-6 md:px-8">
+      <section className="py-20 relative overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-accent/5"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_107%,rgba(0,145,255,0.05)_0%,transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_-7%,rgba(0,199,162,0.05)_0%,transparent_50%)]"></div>
+        
+        <div className="container mx-auto px-6 md:px-8 relative">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="relative rounded-2xl overflow-hidden"
+            className="relative rounded-3xl overflow-hidden border border-border/50 shadow-2xl bg-background/60 backdrop-blur-sm"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-10"></div>
-            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between p-10 md:p-16">
-              <div className="mb-8 lg:mb-0 lg:max-w-2xl">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-accent/10 opacity-50"></div>
+            <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:32px]"></div>
+            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between p-10 md:p-16 gap-12">
+              <div className="lg:max-w-2xl">
+                <motion.h2 
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: 0.1 }}
+                  className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
+                >
                   Ready to secure your pharmaceutical supply chain?
-                </h2>
-                <p className="text-foreground/70 mb-6">
+                </motion.h2>
+                <motion.p 
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  className="text-foreground/70 text-lg mb-8"
+                >
                   Join the growing network of healthcare professionals using
                   MedChain to ensure medication safety and authenticity.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4">
+                </motion.p>
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: 0.3 }}
+                  className="flex flex-col sm:flex-row gap-4"
+                >
                   <Link to="/signup">
-                    <Button size="lg">Get Started</Button>
-                  </Link>
-                  <Link to="/contact">
-                    <Button size="lg" variant="outline">
-                      Contact Sales
+                    <Button 
+                      size="lg" 
+                      className="bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity"
+                    >
+                      Get Started
+                      <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
-                </div>
-              </div>
-              <div className="bg-white/90 backdrop-blur-sm p-6 rounded-xl shadow-card border border-border">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-primary rounded-full"></div>
-                    <div className="text-sm font-medium">Security Stats</div>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  {[
-                    { label: "Tracked Batches", value: "100,000+" },
-                    { label: "Verified Transactions", value: "1.2M+" },
-                    { label: "Platform Users", value: "5,000+" },
-                  ].map((stat, i) => (
-                    <div
-                      key={i}
-                      className="flex justify-between items-center text-sm"
+                  <Link to="/contact">
+                    <Button 
+                      size="lg" 
+                      variant="outline"
+                      className="border-primary/20 hover:bg-primary/10 transition-colors"
                     >
-                      <span className="text-foreground/60">{stat.label}</span>
-                      <span className="font-medium">{stat.value}</span>
-                    </div>
+                      Contact Sales
+                      <ExternalLink className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                </motion.div>
+              </div>
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                className="bg-background/80 backdrop-blur-xl p-8 rounded-2xl shadow-xl border border-border/50 w-full lg:w-auto"
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-3 h-3 bg-gradient-to-r from-primary to-accent rounded-full"></div>
+                    <div className="text-base font-medium bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Security Stats</div>
+                  </div>
+                  <BarChart3 className="h-5 w-5 text-primary" />
+                </div>
+                <div className="space-y-6">
+                  {[
+                    { label: "Tracked Batches", value: "100,000+", icon: Building2 },
+                    { label: "Verified Transactions", value: "1.2M+", icon: Shield },
+                    { label: "Platform Users", value: "5,000+", icon: Users },
+                  ].map((stat, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: 20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 0.5 + (i * 0.1), duration: 0.5 }}
+                      className="flex justify-between items-center p-3 rounded-xl hover:bg-primary/5 transition-colors group"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                          <stat.icon className="h-4 w-4 text-primary" />
+                        </div>
+                        <span className="text-foreground/60 group-hover:text-foreground/80 transition-colors">{stat.label}</span>
+                      </div>
+                      <span className="font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{stat.value}</span>
+                    </motion.div>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             </div>
           </motion.div>
         </div>
@@ -613,87 +664,173 @@ const Index: React.FC = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-border py-10">
-        <div className="container mx-auto px-6 md:px-8">
-          <div className="flex flex-col md:flex-row justify-between mb-8">
-            <div className="mb-8 md:mb-0">
-              <h3 className="text-xl font-semibold text-primary mb-4">
-                MedChain
-              </h3>
-              <p className="text-foreground/60 max-w-xs text-sm">
-                Secure pharmaceutical tracking and verification for the entire
-                supply chain.
-              </p>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
-              <div>
-                <h4 className="text-sm font-medium mb-4">Product</h4>
-                <ul className="space-y-2">
-                  {["Features", "Security", "Pricing", "Demos"].map(
-                    (item, i) => (
-                      <li key={i}>
-                        <a
-                          href="#"
-                          className="text-foreground/60 hover:text-primary text-sm"
-                        >
-                          {item}
-                        </a>
-                      </li>
-                    )
-                  )}
-                </ul>
+      <footer className="relative overflow-hidden border-t border-border/30">
+        {/* Background Elements */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background/80 to-background"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_107%,rgba(0,145,255,0.05)_0%,transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_-7%,rgba(0,199,162,0.05)_0%,transparent_50%)]"></div>
+        
+        <div className="container mx-auto px-6 md:px-8 relative py-16">
+          <div className="flex flex-col md:flex-row justify-between gap-12 mb-16">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="md:max-w-sm"
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-primary to-accent flex items-center justify-center">
+                  <Shield className="h-4 w-4 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  MedChain
+                </h3>
               </div>
-              <div>
-                <h4 className="text-sm font-medium mb-4">Company</h4>
-                <ul className="space-y-2">
-                  {["About", "Blog", "Careers", "Contact"].map((item, i) => (
-                    <li key={i}>
-                      <a
-                        href="#"
-                        className="text-foreground/60 hover:text-primary text-sm"
+              <p className="text-foreground/70 text-base leading-relaxed">
+                Secure pharmaceutical tracking and verification for the entire
+                supply chain. Ensuring medication safety and authenticity at every step.
+              </p>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-12 lg:gap-16"
+            >
+              <div className="space-y-4">
+                <h4 className="text-base font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Product</h4>
+                <ul className="space-y-3">
+                  {[
+                    { label: "Features", href: "#features" },
+                    { label: "Security", href: "#security" },
+                    { label: "Pricing", href: "#pricing" },
+                    { label: "Demos", href: "#demos" }
+                  ].map((item, i) => (
+                    <motion.li 
+                      key={i}
+                      initial={{ opacity: 0, x: -10 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 0.2 + (i * 0.1) }}
+                    >
+                      <Link 
+                        to={item.href}
+                        className="text-sm text-foreground/60 hover:text-primary transition-colors flex items-center group"
                       >
-                        {item}
-                      </a>
-                    </li>
+                        <ChevronRight className="w-3 h-3 opacity-0 -ml-2 group-hover:opacity-100 group-hover:ml-0 transition-all" />
+                        {item.label}
+                      </Link>
+                    </motion.li>
                   ))}
                 </ul>
               </div>
-              <div>
-                <h4 className="text-sm font-medium mb-4">Resources</h4>
-                <ul className="space-y-2">
-                  {["Documentation", "Support", "API", "Privacy"].map(
-                    (item, i) => (
-                      <li key={i}>
-                        <a
-                          href="#"
-                          className="text-foreground/60 hover:text-primary text-sm"
-                        >
-                          {item}
-                        </a>
-                      </li>
-                    )
-                  )}
+
+              <div className="space-y-4">
+                <h4 className="text-base font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Company</h4>
+                <ul className="space-y-3">
+                  {[
+                    { label: "About", href: "#about" },
+                    { label: "Blog", href: "#blog" },
+                    { label: "Careers", href: "#careers" },
+                    { label: "Contact", href: "#contact" }
+                  ].map((item, i) => (
+                    <motion.li 
+                      key={i}
+                      initial={{ opacity: 0, x: -10 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 0.3 + (i * 0.1) }}
+                    >
+                      <Link 
+                        to={item.href}
+                        className="text-sm text-foreground/60 hover:text-primary transition-colors flex items-center group"
+                      >
+                        <ChevronRight className="w-3 h-3 opacity-0 -ml-2 group-hover:opacity-100 group-hover:ml-0 transition-all" />
+                        {item.label}
+                      </Link>
+                    </motion.li>
+                  ))}
                 </ul>
               </div>
-            </div>
+
+              <div className="space-y-4">
+                <h4 className="text-base font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Resources</h4>
+                <ul className="space-y-3">
+                  {[
+                    { label: "Documentation", href: "#docs" },
+                    { label: "Support", href: "#support" },
+                    { label: "API", href: "#api" },
+                    { label: "Privacy", href: "#privacy" }
+                  ].map((item, i) => (
+                    <motion.li 
+                      key={i}
+                      initial={{ opacity: 0, x: -10 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 0.4 + (i * 0.1) }}
+                    >
+                      <Link 
+                        to={item.href}
+                        className="text-sm text-foreground/60 hover:text-primary transition-colors flex items-center group"
+                      >
+                        <ChevronRight className="w-3 h-3 opacity-0 -ml-2 group-hover:opacity-100 group-hover:ml-0 transition-all" />
+                        {item.label}
+                      </Link>
+                    </motion.li>
+                  ))}
+                </ul>
+              </div>
+            </motion.div>
           </div>
-          <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-sm text-foreground/60">
-              &copy; {new Date().getFullYear()} MedChain. All rights
-              reserved.
-            </p>
-            <div className="flex space-x-4 mt-4 md:mt-0">
-              {["Terms", "Privacy", "Cookies"].map((item, i) => (
-                <a
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="border-t border-border/30 pt-8 flex flex-col md:flex-row justify-between items-center gap-4"
+          >
+            <div className="flex items-center gap-6">
+              <p className="text-sm text-foreground/60">
+                &copy; {new Date().getFullYear()} MedChain. All rights reserved.
+              </p>
+              <div className="h-4 w-px bg-border/30"></div>
+              <div className="flex items-center gap-4">
+                {[
+                  { label: "Terms", href: "#terms" },
+                  { label: "Privacy", href: "#privacy" },
+                  { label: "Cookies", href: "#cookies" }
+                ].map((item, i) => (
+                  <Link
+                    key={i}
+                    to={item.href}
+                    className="text-sm text-foreground/60 hover:text-primary transition-colors"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              {[
+                { icon: LinkIcon, href: "#twitter", label: "Twitter" },
+                { icon: Building2, href: "#linkedin", label: "LinkedIn" },
+                { icon: Users, href: "#github", label: "GitHub" }
+              ].map((item, i) => (
+                <Link
                   key={i}
-                  href="#"
-                  className="text-sm text-foreground/60 hover:text-primary"
+                  to={item.href}
+                  className="p-2 rounded-lg hover:bg-primary/10 transition-colors group"
+                  aria-label={item.label}
                 >
-                  {item}
-                </a>
+                  <item.icon className="h-5 w-5 text-foreground/60 group-hover:text-primary transition-colors" />
+                </Link>
               ))}
             </div>
-          </div>
+          </motion.div>
         </div>
       </footer>
     </div>

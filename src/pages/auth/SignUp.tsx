@@ -24,11 +24,11 @@ const SignUp: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="relative p-8 rounded-2xl border border-white/20 shadow-xl bg-white/80 backdrop-blur-xl"
+          className="relative p-8 rounded-2xl border border-border shadow-xl bg-background/80 backdrop-blur-xl"
         >
           {/* Security Badge */}
           <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#0091ff] to-[#00c7a2] p-3 rounded-full shadow-lg">
-            <Shield className="w-6 h-6 text-white" />
+            <Shield className="w-6 h-6 text-background" />
           </div>
 
           <SignUpForm />
@@ -46,7 +46,7 @@ const SignUp: React.FC = () => {
           Already have an account?{" "}
           <Link
             to="/signin"
-            className="font-medium bg-gradient-to-r from-[#0091ff] to-[#00c7a2] bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+            className="font-medium text-primary hover:text-primary/80 transition-colors"
           >
             Sign in
           </Link>
@@ -58,7 +58,7 @@ const SignUp: React.FC = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4, duration: 0.5 }}
-        className="mt-8 border-t border-white/10 pt-6"
+        className="mt-8 border-t border-border/50 pt-6"
       >
         <p className="text-xs text-center text-muted-foreground">
           By creating an account, you agree to our{" "}

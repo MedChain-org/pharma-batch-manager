@@ -195,13 +195,13 @@ const SignUpForm: React.FC = () => {
                 )}
                 <Button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-[#0091ff] to-[#00c7a2] hover:from-[#00c7a2] hover:to-[#0091ff] transition-colors"
+                  className="w-full bg-gradient-to-r from-primary to-accent hover:from-accent hover:to-primary text-background transition-all duration-300"
                   disabled={isLoading || !selectedRole}
                 >
                   {isLoading ? (
                     <div className="flex items-center">
                       <svg
-                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                        className="animate-spin -ml-1 mr-2 h-4 w-4"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"

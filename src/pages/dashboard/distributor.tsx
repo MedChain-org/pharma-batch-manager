@@ -114,7 +114,7 @@ const DistributorDashboard = () => {
         sender: user.id,
         receiver: selectedPharmacist,
         status: "pending",
-        ship_date: new Date().toISOString(),
+        ship_date: new Date().toISOString()
       });
 
       if (newShipment) {

@@ -41,8 +41,8 @@ const Navbar: React.FC = () => {
           borderBottom: "none",
         },
         scrolled: {
-          backgroundColor: "rgba(255, 255, 255, 0.8)",
-          backdropFilter: "blur(12px)",
+          backgroundColor: "rgba(var(--background), 0.7)",
+          backdropFilter: "blur(12px) saturate(180%)",
           boxShadow: "0 2px 20px rgba(0, 0, 0, 0.1)",
         },
       }}
@@ -54,7 +54,7 @@ const Navbar: React.FC = () => {
           className={cn(
             "flex items-center justify-between relative rounded-full transition-all duration-300",
             isScrolled
-              ? "px-6 py-2 bg-white/40 backdrop-blur-sm border border-white/20"
+              ? "px-6 py-2 bg-background/40 backdrop-blur-sm border border-border"
               : "bg-transparent"
           )}
         >
@@ -111,7 +111,7 @@ const Navbar: React.FC = () => {
                 onClick={toggleTheme}
                 className={cn(
                   "relative overflow-hidden group",
-                  isScrolled && "bg-white/40 hover:bg-primary/10",
+                  isScrolled && "bg-background/40 hover:bg-primary/10",
                   !isScrolled && "hover:bg-primary/10"
                 )}
                 aria-label="Toggle theme"
@@ -133,16 +133,16 @@ const Navbar: React.FC = () => {
                   className={cn(
                     "text-sm relative overflow-hidden group",
                     isScrolled &&
-                      "bg-white/40 hover:from-[#0091ff]/70 hover:to-[#00c7a2]/70 hover:bg-gradient-to-r",
+                      "bg-background/40 hover:bg-primary/10",
                     !isScrolled &&
-                      "hover:from-[#0091ff]/50 hover:to-[#00c7a2]/50 hover:bg-gradient-to-r"
+                      "hover:bg-primary/10"
                   )}
                 >
-                  <span className="relative z-10 group-hover:text-white transition-colors">
+                  <span className="relative z-10 group-hover:text-primary transition-colors">
                     Sign In
                   </span>
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-[#0091ff]/70 to-[#00c7a2]/70 -z-10 opacity-0 group-hover:opacity-100"
+                    className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 -z-10 opacity-0 group-hover:opacity-100"
                     transition={{ duration: 0.2 }}
                   />
                 </Button>
@@ -195,8 +195,8 @@ const Navbar: React.FC = () => {
               className={cn(
                 "md:hidden pt-4 pb-2 mt-2 rounded-xl",
                 isScrolled &&
-                  "bg-white/40 backdrop-blur-sm border border-white/30",
-                !isScrolled && "bg-white/10 backdrop-blur-sm"
+                  "bg-background/40 backdrop-blur-sm border border-border",
+                !isScrolled && "bg-background/10 backdrop-blur-sm"
               )}
             >
               <nav className="flex flex-col space-y-4 px-4">
@@ -241,7 +241,7 @@ const Navbar: React.FC = () => {
                     onClick={toggleTheme}
                     className={cn(
                       "w-full justify-start text-sm group gap-2",
-                      isScrolled && "bg-white/40 hover:bg-primary/10",
+                      isScrolled && "bg-background/40 hover:bg-primary/10",
                       !isScrolled && "hover:bg-primary/10"
                     )}
                   >
@@ -263,12 +263,12 @@ const Navbar: React.FC = () => {
                       className={cn(
                         "w-full justify-center text-sm group",
                         isScrolled &&
-                          "bg-white/40 hover:from-[#0091ff]/70 hover:to-[#00c7a2]/70 hover:bg-gradient-to-r",
+                          "bg-background/40 hover:bg-primary/10",
                         !isScrolled &&
-                          "hover:from-[#0091ff]/50 hover:to-[#00c7a2]/50 hover:bg-gradient-to-r"
+                          "hover:bg-primary/10"
                       )}
                     >
-                      <span className="group-hover:text-white transition-colors">
+                      <span className="group-hover:text-primary transition-colors">
                         Sign In
                       </span>
                     </Button>

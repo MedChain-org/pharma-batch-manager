@@ -1,4 +1,3 @@
-
 import React from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -72,14 +71,14 @@ const Hero: React.FC = () => {
           >
             <div className="relative rounded-2xl overflow-hidden shadow-xl">
               <div className="aspect-[4/3] bg-gradient-to-br from-primary/10 to-medical-light rounded-2xl flex items-center justify-center">
-                <div className="absolute inset-0 bg-white/40 backdrop-blur-xs"></div>
+                <div className="absolute inset-0 bg-background/60 backdrop-blur-sm"></div>
                 <div className="relative z-10 p-8">
                   <div className="glass-card p-6 mb-6">
                     <div className="flex items-center mb-4">
                       <div className="w-3 h-3 rounded-full bg-primary mr-2"></div>
                       <span className="text-sm font-medium">Batch Tracking</span>
                     </div>
-                    <div className="h-32 bg-white/50 rounded-lg shadow-subtle flex items-center justify-center">
+                    <div className="h-32 bg-background/50 rounded-lg shadow-subtle flex items-center justify-center">
                       <div className="text-center">
                         <div className="w-16 h-1 bg-primary/20 rounded mx-auto mb-2"></div>
                         <div className="w-24 h-1 bg-primary/20 rounded mx-auto mb-2"></div>

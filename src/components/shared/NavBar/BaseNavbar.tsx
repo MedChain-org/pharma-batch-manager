@@ -106,7 +106,7 @@ const BaseNavbar: React.FC<BaseNavbarProps> = ({
                 <UserCircle className="mr-2 h-4 w-4" />
                 <span>Profile</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/switch-account")}>
+              <DropdownMenuItem onClick={() => navigate("/signin")}>
                 <Users className="mr-2 h-4 w-4" />
                 <span>Switch Account</span>
               </DropdownMenuItem>

@@ -379,3 +379,18 @@ export async function fetchManufacturerById(manufacturerId: string) {
   
   return data as User;
 }
+
+export async function fetchDrugById(drugId: string) {
+  const { data, error } = await supabase
+    .from('drugs')
+    .select('*')
+    .eq('drug_id', drugId)
+    .single();
+  
+  if (error) {
+    console.error('Error fetching drug by ID:', error);
+    return null;
+  }
+  
+  return data as Drug;
+}

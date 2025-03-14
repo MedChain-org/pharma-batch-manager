@@ -1,4 +1,3 @@
-
 import React from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -66,13 +65,13 @@ const UserTypeSelector: React.FC<UserTypeSelectorProps> = ({ selectedRole, onCha
               "w-full p-6 rounded-xl transition-all duration-300 text-left",
               selectedRole === role.id
                 ? "bg-primary/10 border-2 border-primary/50 shadow-md"
-                : "bg-white border border-border hover:bg-secondary/50 hover:border-primary/30"
+                : "bg-background/60 border border-border hover:bg-secondary/50 hover:border-primary/30"
             )}
           >
             <div className="flex items-start space-x-4">
               <div className={cn(
                 "p-3 rounded-lg",
-                selectedRole === role.id ? "bg-primary/15" : "bg-secondary"
+                selectedRole === role.id ? "bg-primary/15" : "bg-secondary/50"
               )}>
                 <role.icon className={cn(
                   "h-6 w-6",

@@ -75,7 +75,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
         className={cn(
-          "flex-1 flex flex-col justify-center",
+          "flex-1 flex flex-col justify-center bg-background dark:bg-background/5",
           "px-6 py-12 lg:px-8 xl:px-12"
         )}
       >

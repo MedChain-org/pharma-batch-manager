@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import ManufacturerNavbar from "@/components/shared/NavBar/ManufacturerNavbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,9 @@ import {
   AlertTriangle,
   Shield,
   CheckCircle,
+  Search,
+  Calendar,
+  X,
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -27,18 +30,24 @@ import {
   fetchDrugsByManufacturer,
   fetchDrugStatusUpdates,
   addDrugStatusUpdate,
+  fetchDrugById,
 } from "@/lib/database";
 import QRCodeLib from "qrcode";
 
 const ManufacturerDashboard = () => {
   const [drugs, setDrugs] = useState<Drug[]>([]);
   const [newDrug, setNewDrug] = useState<Partial<Drug>>({});
+  const [searchQuery, setSearchQuery] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [statusUpdates, setStatusUpdates] = useState<
     Record<string, DrugStatusUpdate[]>
   >({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [selectedDrug, setSelectedDrug] = useState<Drug | null>(null);
+  const [pendingDrugIds, setPendingDrugIds] = useState<string[]>([]);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -47,6 +56,58 @@ const ManufacturerDashboard = () => {
       loadDrugs();
     }
   }, [user]);
+
+  // Polling mechanism for pending drugs
+  useEffect(() => {
+    if (pendingDrugIds.length === 0) return;
+
+    // Set up polling for each pending drug
+    const POLLING_INTERVAL = 5000; // 5 seconds
+
+    const pollingTimer = setInterval(async () => {
+      let updatedPendingIds = [...pendingDrugIds];
+      let drugsUpdated = false;
+
+      // Check each pending drug for status updates
+      for (const drugId of pendingDrugIds) {
+        const updatedDrug = await fetchDrugById(drugId);
+
+        if (updatedDrug && updatedDrug.blockchain_tx_id !== "pending") {
+          // Drug has been verified on blockchain
+          drugsUpdated = true;
+
+          // Remove this drug ID from pending list
+          updatedPendingIds = updatedPendingIds.filter((id) => id !== drugId);
+
+          // Update the drugs list with the updated drug
+          setDrugs((prevDrugs) =>
+            prevDrugs.map((drug) =>
+              drug.drug_id === drugId ? updatedDrug : drug
+            )
+          );
+
+          // Notify user that verification is complete
+          toast({
+            title: "Blockchain Verification Complete",
+            description: `${updatedDrug.name} (Batch: ${updatedDrug.batch_number}) has been verified on the blockchain.`,
+          });
+        }
+      }
+
+      // Update the pending drug IDs list
+      if (drugsUpdated) {
+        setPendingDrugIds(updatedPendingIds);
+      }
+
+      // If no more pending drugs, clear the interval
+      if (updatedPendingIds.length === 0) {
+        clearInterval(pollingTimer);
+      }
+    }, POLLING_INTERVAL);
+
+    // Clean up the interval when the component unmounts or when pendingDrugIds changes
+    return () => clearInterval(pollingTimer);
+  }, [pendingDrugIds, toast]);
 
   useEffect(() => {
     const generateQRCode = async () => {
@@ -102,6 +163,14 @@ const ManufacturerDashboard = () => {
     try {
       const drugsData = await fetchDrugsByManufacturer(user.id);
       setDrugs(drugsData);
+
+      // Find pending drugs and add their IDs to pendingDrugIds state
+      const pendingDrugs = drugsData.filter(
+        (drug) => drug.blockchain_tx_id === "pending"
+      );
+      if (pendingDrugs.length > 0) {
+        setPendingDrugIds(pendingDrugs.map((drug) => drug.drug_id));
+      }
 
       // Fetch status updates for each drug
       const updatesMap: Record<string, DrugStatusUpdate[]> = {};
@@ -159,8 +228,11 @@ const ManufacturerDashboard = () => {
           description: "New drug batch added successfully to blockchain!",
         });
 
-        // Refresh data
-        await loadDrugs();
+        // Add the new drug to the pending list for polling
+        setPendingDrugIds((prev) => [...prev, drugData.drug_id]);
+
+        // Add the new drug to the state immediately
+        setDrugs((prev) => [drugData, ...prev]);
 
         // Reset form
         setNewDrug({});
@@ -246,6 +318,30 @@ const ManufacturerDashboard = () => {
       </div>
     );
   };
+
+  // Filter drugs based on search criteria
+  const filteredDrugs = useMemo(() => {
+    return drugs.filter((drug) => {
+      const matchesSearch =
+        searchQuery === "" ||
+        drug.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        drug.batch_number.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesDateRange =
+        (!startDate ||
+          new Date(drug.manufacture_date) >= new Date(startDate)) &&
+        (!endDate || new Date(drug.manufacture_date) <= new Date(endDate));
+
+      const matchesStatus =
+        statusFilter === "all" ||
+        (statusFilter === "verified" &&
+          drug.blockchain_tx_id &&
+          drug.blockchain_tx_id !== "pending") ||
+        (statusFilter === "pending" && drug.blockchain_tx_id === "pending");
+
+      return matchesSearch && matchesDateRange && matchesStatus;
+    });
+  }, [drugs, searchQuery, startDate, endDate, statusFilter]);
 
   return (
     <>
@@ -361,23 +457,98 @@ const ManufacturerDashboard = () => {
         </div>
 
         <Card className="glass-card">
-          <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-t-xl">
+          <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-t-xl flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <QrCode size={18} />
               Blockchain Verified Drug Batches
             </CardTitle>
           </CardHeader>
           <CardContent>
+            {/* Search Section */}
+            <div className="mb-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by drug name or batch number..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="flex-1"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="flex-1"
+                  />
+                </div>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <option value="all">All Status</option>
+                  <option value="verified">Verified</option>
+                  <option value="pending">Pending</option>
+                </select>
+              </div>
+              {(searchQuery ||
+                startDate ||
+                endDate ||
+                statusFilter !== "all") && (
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    Found {filteredDrugs.length} results
+                  </p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSearchQuery("");
+                      setStartDate("");
+                      setEndDate("");
+                      setStatusFilter("all");
+                    }}
+                    className="text-sm"
+                  >
+                    Clear filters
+                  </Button>
+                </div>
+              )}
+            </div>
+
             {loading ? (
               <div className="flex justify-center items-center py-8">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
-            ) : drugs.length === 0 ? (
+            ) : filteredDrugs.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                No drugs found. Add your first drug batch above.
+                {drugs.length === 0
+                  ? "No drugs found. Add your first drug batch above."
+                  : "No matching results found."}
               </div>
             ) : (
-              <div className="overflow-x-auto relative z-10">
+              <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -391,7 +562,7 @@ const ManufacturerDashboard = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {drugs.map((drug) => {
+                    {filteredDrugs.map((drug) => {
                       const updates = statusUpdates[drug.drug_id] || [];
                       const latestStatus =
                         updates.length > 0 ? updates[0].status : "manufactured";
