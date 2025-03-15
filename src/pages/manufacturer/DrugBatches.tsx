@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useState, useEffect, useMemo } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -8,18 +8,29 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, QrCode, AlertTriangle, Shield, CheckCircle, Search, Calendar, X } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
-import { Drug, DrugStatusUpdate } from '@/types/database';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Loader2,
+  QrCode,
+  AlertTriangle,
+  Shield,
+  CheckCircle,
+  Search,
+  Calendar,
+  X,
+} from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { Drug, DrugStatusUpdate } from "@/types/database";
 import {
   addDrug,
   fetchDrugsByManufacturer,
@@ -28,9 +39,19 @@ import {
   addDrugStatusUpdate,
   addShipment,
   addShipmentStatusUpdate,
-} from '@/lib/database';
+  fetchShipments,
+} from "@/lib/database";
 import QRCodeLib from "qrcode";
 import ManufacturerNavbar from "@/components/shared/NavBar/ManufacturerNavbar";
+import { format } from "date-fns";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { Shipment, ShipmentStatusUpdate } from "@/types/database";
 
 interface DrugBatch {
   id: string;
@@ -39,11 +60,11 @@ interface DrugBatch {
   manufacturingDate: string;
   expiryDate: string;
   quantity: number;
-  status: 'In Stock' | 'Low Stock' | 'Out of Stock';
+  status: "In Stock" | "Low Stock" | "Out of Stock";
 }
 
 const DrugBatches = () => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [newDrug, setNewDrug] = useState<any>({});
   const [submitting, setSubmitting] = useState(false);
   const [drugs, setDrugs] = useState<Drug[]>([]);
@@ -51,32 +72,44 @@ const DrugBatches = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [statusUpdates, setStatusUpdates] = useState<Record<string, DrugStatusUpdate[]>>({});
+  const [statusUpdates, setStatusUpdates] = useState<
+    Record<string, DrugStatusUpdate[]>
+  >({});
   const [loading, setLoading] = useState(true);
   const [selectedDrug, setSelectedDrug] = useState<Drug | null>(null);
   const [pendingDrugIds, setPendingDrugIds] = useState<string[]>([]);
+
+  // Batch Management specific state
+  const [shipments, setShipments] = useState<Shipment[]>([]);
+  const [shipmentMap, setShipmentMap] = useState<Record<string, Shipment>>({});
+  const [batchSearchQuery, setBatchSearchQuery] = useState<string>("");
+  const [batchStartDate, setBatchStartDate] = useState<Date | undefined>();
+  const [batchEndDate, setBatchEndDate] = useState<Date | undefined>();
+  const [selectedBatchStatus, setSelectedBatchStatus] = useState<string>("all");
+  const [isLoadingBatches, setIsLoadingBatches] = useState<boolean>(true);
+
   const { toast } = useToast();
   const { user } = useAuth();
 
   // Sample data - replace with actual data from your backend
   const drugBatches: DrugBatch[] = [
     {
-      id: '1',
-      name: 'Paracetamol',
-      batchNumber: 'PCM2024001',
-      manufacturingDate: '2024-01-15',
-      expiryDate: '2026-01-15',
+      id: "1",
+      name: "Paracetamol",
+      batchNumber: "PCM2024001",
+      manufacturingDate: "2024-01-15",
+      expiryDate: "2026-01-15",
       quantity: 10000,
-      status: 'In Stock',
+      status: "In Stock",
     },
     {
-      id: '2',
-      name: 'Amoxicillin',
-      batchNumber: 'AMX2024002',
-      manufacturingDate: '2024-02-01',
-      expiryDate: '2025-02-01',
+      id: "2",
+      name: "Amoxicillin",
+      batchNumber: "AMX2024002",
+      manufacturingDate: "2024-02-01",
+      expiryDate: "2025-02-01",
       quantity: 500,
-      status: 'Low Stock',
+      status: "Low Stock",
     },
   ];
 
@@ -142,14 +175,17 @@ const DrugBatches = () => {
           blockchain_tx_id: selectedDrug.blockchain_tx_id,
         };
 
-        const qrCodeDataUrl = await QRCodeLib.toDataURL(JSON.stringify(qrData), {
-          width: 300,
-          margin: 2,
-          color: {
-            dark: "#000000",
-            light: "#ffffff",
-          },
-        });
+        const qrCodeDataUrl = await QRCodeLib.toDataURL(
+          JSON.stringify(qrData),
+          {
+            width: 300,
+            margin: 2,
+            color: {
+              dark: "#000000",
+              light: "#ffffff",
+            },
+          }
+        );
 
         const qrContainer = document.getElementById("qr-code-container");
         if (qrContainer) {
@@ -172,7 +208,9 @@ const DrugBatches = () => {
     if (!user) return;
 
     setLoading(true);
+    setIsLoadingBatches(true);
     try {
+      // Fetch drugs created by the manufacturer
       const drugsData = await fetchDrugsByManufacturer(user.id);
       setDrugs(drugsData);
 
@@ -192,8 +230,21 @@ const DrugBatches = () => {
       );
 
       setStatusUpdates(updatesMap);
+
+      // Fetch all shipments for batch management
+      const allShipments = await fetchShipments();
+      setShipments(allShipments);
+
+      // Create a map of shipments by drug_id for quick lookup
+      const shipmentsByDrug: Record<string, Shipment> = {};
+      allShipments.forEach((shipment) => {
+        shipment.drug_ids.forEach((drugId) => {
+          shipmentsByDrug[drugId] = shipment;
+        });
+      });
+      setShipmentMap(shipmentsByDrug);
     } catch (error) {
-      console.error("Error loading drugs:", error);
+      console.error("Error loading data:", error);
       toast({
         title: "Error",
         description: "Failed to load drug data. Please try again.",
@@ -201,13 +252,19 @@ const DrugBatches = () => {
       });
     } finally {
       setLoading(false);
+      setIsLoadingBatches(false);
     }
   };
 
   const handleAddDrug = async () => {
     if (!user) return;
 
-    if (!newDrug.name || !newDrug.batch_number || !newDrug.manufacture_date || !newDrug.expiry_date) {
+    if (
+      !newDrug.name ||
+      !newDrug.batch_number ||
+      !newDrug.manufacture_date ||
+      !newDrug.expiry_date
+    ) {
       toast({
         title: "Validation Error",
         description: "Please fill in all required fields.",
@@ -226,7 +283,7 @@ const DrugBatches = () => {
         batch_number: newDrug.batch_number || "",
       });
 
-if (drugData) {
+      if (drugData) {
         // Manually create a shipment for the new drug
         try {
           const shipmentData = await addShipment({
@@ -266,7 +323,6 @@ if (drugData) {
 
         // Add the new drug to the state immediately
         setDrugs((prev) => [drugData, ...prev]);
-
 
         // Reset form
         setNewDrug({});
@@ -318,7 +374,10 @@ if (drugData) {
   };
 
   const StatusBadge = ({ status }: { status: string }) => (
-    <Badge variant={getStatusBadgeVariant(status) as any} className="capitalize">
+    <Badge
+      variant={getStatusBadgeVariant(status) as any}
+      className="capitalize"
+    >
       {status.replace("_", " ")}
     </Badge>
   );
@@ -359,7 +418,8 @@ if (drugData) {
         drug.batch_number.toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesDateRange =
-        (!startDate || new Date(drug.manufacture_date) >= new Date(startDate)) &&
+        (!startDate ||
+          new Date(drug.manufacture_date) >= new Date(startDate)) &&
         (!endDate || new Date(drug.manufacture_date) <= new Date(endDate));
 
       const matchesStatus =
@@ -373,17 +433,115 @@ if (drugData) {
     });
   }, [drugs, searchQuery, startDate, endDate, statusFilter]);
 
+  // Filter drugs for batch management section
+  const filteredBatches = useMemo(() => {
+    return drugs.filter((drug) => {
+      // Search filter
+      const matchesSearch =
+        drug.name.toLowerCase().includes(batchSearchQuery.toLowerCase()) ||
+        drug.drug_id.toLowerCase().includes(batchSearchQuery.toLowerCase()) ||
+        drug.batch_number
+          .toLowerCase()
+          .includes(batchSearchQuery.toLowerCase());
+
+      // Date filter
+      const manufactureDate = new Date(drug.manufacture_date);
+      const afterStartDate =
+        !batchStartDate || manufactureDate >= batchStartDate;
+      const beforeEndDate = !batchEndDate || manufactureDate <= batchEndDate;
+
+      // Status filter - using shipment status
+      const shipment = shipmentMap[drug.drug_id];
+      const status = shipment?.status || "pending";
+      const matchesStatus =
+        selectedBatchStatus === "all" || status === selectedBatchStatus;
+
+      return matchesSearch && afterStartDate && beforeEndDate && matchesStatus;
+    });
+  }, [
+    drugs,
+    batchSearchQuery,
+    batchStartDate,
+    batchEndDate,
+    selectedBatchStatus,
+    shipmentMap,
+  ]);
+
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'In Stock':
-        return 'bg-green-100 text-green-800';
-      case 'Low Stock':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'Out of Stock':
-        return 'bg-red-100 text-red-800';
+      case "In Stock":
+        return "bg-green-100 text-green-800";
+      case "Low Stock":
+        return "bg-yellow-100 text-yellow-800";
+      case "Out of Stock":
+        return "bg-red-100 text-red-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
+  };
+
+  // Function to determine the status badge color for batch management
+  const getBatchStatusBadge = (drugId: string) => {
+    const shipment = shipmentMap[drugId];
+    if (!shipment) return <Badge variant="outline">In Stock</Badge>;
+
+    switch (shipment.status) {
+      case "pending":
+        return <Badge variant="secondary">In Stock</Badge>;
+      case "in_transit":
+        return <Badge variant="default">In Transit</Badge>;
+      case "delivered":
+        return <Badge variant="outline">Delivered</Badge>;
+      default:
+        return <Badge variant="outline">In Stock</Badge>;
+    }
+  };
+
+  // Function to display the blockchain status for batch management
+  const getBatchBlockchainStatus = (drug: Drug) => {
+    if (!drug.blockchain_tx_id) {
+      return (
+        <Badge variant="outline" className="flex items-center gap-1">
+          <AlertTriangle className="h-3 w-3" /> Not Verified
+        </Badge>
+      );
+    }
+
+    if (drug.blockchain_tx_id === "pending") {
+      return (
+        <Badge variant="secondary" className="flex items-center gap-1">
+          <Loader2 className="h-3 w-3 animate-spin" /> Verifying
+        </Badge>
+      );
+    }
+
+    return (
+      <Badge variant="outline" className="flex items-center gap-1">
+        <Shield className="h-3 w-3" /> Verified
+      </Badge>
+    );
+  };
+
+  // Helper to render a date in a human-readable format
+  const formatDate = (dateString: string) => {
+    try {
+      return format(new Date(dateString), "dd-MM-yyyy");
+    } catch {
+      return dateString;
+    }
+  };
+
+  // Calculate quantity (placeholder - in a real app this might come from inventory data)
+  const getQuantity = (drug: Drug) => {
+    // Extract the numeric part from the batch number
+    const batchNumber = drug.batch_number;
+    const numericPart = batchNumber.match(/\d+/);
+    return numericPart ? parseInt(numericPart[0]) : 0;
+  };
+
+  // Function to determine if a drug is expired
+  const isExpired = (expiryDate: string) => {
+    return new Date(expiryDate) < new Date();
   };
 
   return (
@@ -504,7 +662,10 @@ if (drugData) {
                   <option value="pending">Pending</option>
                 </select>
               </div>
-              {(searchQuery || startDate || endDate || statusFilter !== "all") && (
+              {(searchQuery ||
+                startDate ||
+                endDate ||
+                statusFilter !== "all") && (
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">
                     Found {filteredDrugs.length} results
@@ -553,17 +714,22 @@ if (drugData) {
                   <TableBody>
                     {filteredDrugs.map((drug) => {
                       const updates = statusUpdates[drug.drug_id] || [];
-                      const latestStatus = updates.length > 0 ? updates[0].status : "manufactured";
+                      const latestStatus =
+                        updates.length > 0 ? updates[0].status : "manufactured";
 
                       return (
                         <TableRow
                           key={drug.drug_id}
                           className="hover:bg-accent/5 relative z-10 transition-colors"
                         >
-                          <TableCell className="font-medium">{drug.name}</TableCell>
+                          <TableCell className="font-medium">
+                            {drug.name}
+                          </TableCell>
                           <TableCell>{drug.batch_number}</TableCell>
                           <TableCell>
-                            {new Date(drug.manufacture_date).toLocaleDateString()}
+                            {new Date(
+                              drug.manufacture_date
+                            ).toLocaleDateString()}
                           </TableCell>
                           <TableCell>
                             {new Date(drug.expiry_date).toLocaleDateString()}
@@ -587,7 +753,7 @@ if (drugData) {
                             </Button>
                           </TableCell>
                         </TableRow>
-                      )
+                      );
                     })}
                   </TableBody>
                 </Table>
@@ -596,50 +762,157 @@ if (drugData) {
           </CardContent>
         </Card>
 
+        {/* New Batch Management Component Integration */}
         <Card className="rounded-xl overflow-hidden">
           <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-t-xl">
             <CardTitle>Batch Management</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="flex items-center space-x-4 mb-6">
-              <Input
-                placeholder="Search batches..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="max-w-sm rounded-lg"
-              />
+            {/* Search bar */}
+            <div className="mb-4">
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search batches..."
+                  className="pl-8"
+                  value={batchSearchQuery}
+                  onChange={(e) => setBatchSearchQuery(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Filters */}
+            <div className="flex flex-wrap gap-4 mb-6">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "justify-start text-left font-normal",
+                      !batchStartDate && "text-muted-foreground"
+                    )}
+                  >
+                    <Calendar className="mr-2 h-4 w-4" />
+                    {batchStartDate
+                      ? format(batchStartDate, "dd-MM-yyyy")
+                      : "Manufacturing Date From"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={batchStartDate}
+                    onSelect={setBatchStartDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "justify-start text-left font-normal",
+                      !batchEndDate && "text-muted-foreground"
+                    )}
+                  >
+                    <Calendar className="mr-2 h-4 w-4" />
+                    {batchEndDate
+                      ? format(batchEndDate, "dd-MM-yyyy")
+                      : "Manufacturing Date To"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={batchEndDate}
+                    onSelect={setBatchEndDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <Select
+                value={selectedBatchStatus}
+                onValueChange={setSelectedBatchStatus}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Status Filter" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="pending">In Stock</SelectItem>
+                  <SelectItem value="in_transit">In Transit</SelectItem>
+                  <SelectItem value="delivered">Delivered</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="rounded-xl overflow-hidden border">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/50">
-                    <TableHead className="rounded-tl-lg">Batch Number</TableHead>
+                    <TableHead className="rounded-tl-lg">Drug ID</TableHead>
                     <TableHead>Drug Name</TableHead>
                     <TableHead>Manufacturing Date</TableHead>
                     <TableHead>Expiry Date</TableHead>
                     <TableHead>Quantity</TableHead>
-                    <TableHead className="rounded-tr-lg">Status</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="rounded-tr-lg">
+                      Blockchain Status
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {drugBatches.map((batch, index) => (
-                    <TableRow 
-                      key={batch.id}
-                      className={index === drugBatches.length - 1 ? "last:rounded-b-lg" : ""}
-                    >
-                      <TableCell className="font-medium">{batch.batchNumber}</TableCell>
-                      <TableCell>{batch.name}</TableCell>
-                      <TableCell>{batch.manufacturingDate}</TableCell>
-                      <TableCell>{batch.expiryDate}</TableCell>
-                      <TableCell>{batch.quantity}</TableCell>
-                      <TableCell>
-                        <Badge className={`${getStatusColor(batch.status)} rounded-lg px-3 py-1`}>
-                          {batch.status}
-                        </Badge>
+                  {isLoadingBatches ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-10">
+                        <div className="flex justify-center items-center">
+                          <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                          <span>Loading batches...</span>
+                        </div>
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : filteredBatches.length > 0 ? (
+                    filteredBatches.map((drug) => (
+                      <TableRow
+                        key={drug.drug_id}
+                        className="hover:bg-accent/5 "
+                      >
+                        <TableCell className="font-medium">
+                          {drug.drug_id}
+                        </TableCell>
+                        <TableCell>{drug.name}</TableCell>
+                        <TableCell>
+                          {formatDate(drug.manufacture_date)}
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className={
+                              isExpired(drug.expiry_date) ? "text-red-500" : ""
+                            }
+                          >
+                            {formatDate(drug.expiry_date)}
+                          </span>
+                        </TableCell>
+                        <TableCell>{getQuantity(drug)}</TableCell>
+                        <TableCell>
+                          {getBatchStatusBadge(drug.drug_id)}
+                        </TableCell>
+                        <TableCell>{getBatchBlockchainStatus(drug)}</TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={7}
+                        className="text-center py-10 text-muted-foreground"
+                      >
+                        No batches found
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </div>
@@ -688,7 +961,9 @@ if (drugData) {
                         Manufacture Date
                       </div>
                       <div className="font-medium">
-                        {new Date(selectedDrug.manufacture_date).toLocaleDateString()}
+                        {new Date(
+                          selectedDrug.manufacture_date
+                        ).toLocaleDateString()}
                       </div>
                     </div>
                     <div className="space-y-2">
@@ -696,7 +971,9 @@ if (drugData) {
                         Expiry Date
                       </div>
                       <div className="font-medium">
-                        {new Date(selectedDrug.expiry_date).toLocaleDateString()}
+                        {new Date(
+                          selectedDrug.expiry_date
+                        ).toLocaleDateString()}
                       </div>
                     </div>
                     <div className="space-y-2">
@@ -704,14 +981,19 @@ if (drugData) {
                         Blockchain Status
                       </div>
                       <div className="font-medium flex items-center gap-1">
-                        {getBlockchainStatus(selectedDrug).status === "confirmed" ? (
+                        {getBlockchainStatus(selectedDrug).status ===
+                        "confirmed" ? (
                           <>
                             <CheckCircle size={16} className="text-green-500" />
                             <span>Verified on blockchain</span>
                           </>
-                        ) : getBlockchainStatus(selectedDrug).status === "pending" ? (
+                        ) : getBlockchainStatus(selectedDrug).status ===
+                          "pending" ? (
                           <>
-                            <Loader2 size={16} className="animate-spin text-amber-500" />
+                            <Loader2
+                              size={16}
+                              className="animate-spin text-amber-500"
+                            />
                             <span>Pending confirmation</span>
                           </>
                         ) : (
@@ -729,7 +1011,8 @@ if (drugData) {
                       variant="outline"
                       className="flex-1"
                       onClick={() => {
-                        const qrContainer = document.getElementById("qr-code-container");
+                        const qrContainer =
+                          document.getElementById("qr-code-container");
                         if (qrContainer) {
                           const printWindow = window.open("", "_blank");
                           if (printWindow) {
@@ -758,7 +1041,8 @@ if (drugData) {
                     <Button
                       className="flex-1"
                       onClick={async () => {
-                        const qrContainer = document.getElementById("qr-code-container");
+                        const qrContainer =
+                          document.getElementById("qr-code-container");
                         if (qrContainer) {
                           const img = qrContainer.querySelector("img");
                           if (img) {
@@ -781,9 +1065,10 @@ if (drugData) {
                       Authentication Instructions
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      This QR code should be printed and attached to each drug package in this batch.
-                      Consumers and stakeholders can scan it to verify authenticity and track the drug's
-                      journey through the supply chain.
+                      This QR code should be printed and attached to each drug
+                      package in this batch. Consumers and stakeholders can scan
+                      it to verify authenticity and track the drug's journey
+                      through the supply chain.
                     </p>
                   </div>
                 </div>
@@ -796,4 +1081,4 @@ if (drugData) {
   );
 };
 
-export default DrugBatches; 
+export default DrugBatches;

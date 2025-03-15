@@ -15,6 +15,7 @@ import DistributorDashboard from "./pages/dashboard/distributor";
 import PharmacistDashboard from "./pages/dashboard/pharmacist";
 import DoctorDashboard from "./pages/dashboard/doctor";
 import { GenerateQR, DrugBatches, SupplyChain } from "./pages/manufacturer";
+import ShipmentsPage from "./pages/distributor/shipments";
 import { UserRole } from "@/utils/types";
 
 const queryClient = new QueryClient();
@@ -108,15 +109,7 @@ const App = () => (
                 path="/distributor/shipments"
                 element={
                   <ProtectedRoute allowedRoles={["distributor"]}>
-                    <DistributorDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/distributor/tracking"
-                element={
-                  <ProtectedRoute allowedRoles={["distributor"]}>
-                    <DistributorDashboard />
+                    <ShipmentsPage />
                   </ProtectedRoute>
                 }
               />

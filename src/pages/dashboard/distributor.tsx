@@ -26,6 +26,8 @@ import {
   AlertCircle,
   ArrowRight,
   Shield,
+  CheckCircle,
+  AlertTriangle,
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -37,6 +39,7 @@ import {
   updateShipmentStatus,
 } from "@/lib/database";
 import { Drug, Shipment, ShipmentStatusUpdate, User } from "@/types/database";
+import QRCodeLib from "qrcode";
 
 const DistributorDashboard = () => {
   const [drugs, setDrugs] = useState<Drug[]>([]);
@@ -49,6 +52,8 @@ const DistributorDashboard = () => {
   const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(
     null
   );
+  const [selectedShipmentForQR, setSelectedShipmentForQR] =
+    useState<Shipment | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -57,6 +62,52 @@ const DistributorDashboard = () => {
       loadData();
     }
   }, [user]);
+
+  useEffect(() => {
+    const generateQRCode = async () => {
+      if (!selectedShipmentForQR) return;
+
+      try {
+        const qrData = {
+          shipment_id: selectedShipmentForQR.shipment_id,
+          drug_ids: selectedShipmentForQR.drug_ids,
+          sender: selectedShipmentForQR.sender,
+          receiver: selectedShipmentForQR.receiver,
+          status: selectedShipmentForQR.status,
+          ship_date: selectedShipmentForQR.ship_date,
+          blockchain_tx_id: selectedShipmentForQR.blockchain_tx_id,
+        };
+
+        const qrCodeDataUrl = await QRCodeLib.toDataURL(
+          JSON.stringify(qrData),
+          {
+            width: 300,
+            margin: 2,
+            color: {
+              dark: "#000000",
+              light: "#ffffff",
+            },
+          }
+        );
+
+        const qrContainer = document.getElementById(
+          "distributor-qr-code-container"
+        );
+        if (qrContainer) {
+          qrContainer.innerHTML = `<img src="${qrCodeDataUrl}" alt="QR Code for Shipment ${selectedShipmentForQR.shipment_id}" style="width: 100%; height: 100%; object-fit: contain;" />`;
+        }
+      } catch (error) {
+        console.error("Error generating QR code:", error);
+        toast({
+          title: "Error",
+          description: "Failed to generate QR code. Please try again.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    generateQRCode();
+  }, [selectedShipmentForQR, toast]);
 
   const loadData = async () => {
     if (!user) return;
@@ -114,7 +165,7 @@ const DistributorDashboard = () => {
         sender: user.id,
         receiver: selectedPharmacist,
         status: "pending",
-        ship_date: new Date().toISOString()
+        ship_date: new Date().toISOString(),
       });
 
       if (newShipment) {
@@ -211,6 +262,14 @@ const DistributorDashboard = () => {
       {status.replace("_", " ")}
     </Badge>
   );
+
+  const handleGenerateQR = (shipment: Shipment) => {
+    setSelectedShipmentForQR(shipment);
+    toast({
+      title: "QR Code Generated",
+      description: "QR code for shipment verification has been generated.",
+    });
+  };
 
   return (
     <>
@@ -460,7 +519,12 @@ const DistributorDashboard = () => {
                         <TableCell>
                           {new Date(shipment.ship_date).toLocaleDateString()}
                         </TableCell>
-                        <TableCell>{shipment.drug_ids.length}</TableCell>
+                        <TableCell>
+                          {Array.isArray(shipment.drug_ids)
+                            ? shipment.drug_ids.length
+                            : 0}{" "}
+                          drugs
+                        </TableCell>
                         <TableCell>
                           {shipment.blockchain_tx_id === "pending" ? (
                             <Badge
@@ -492,6 +556,7 @@ const DistributorDashboard = () => {
                           <div className="flex space-x-2">
                             <Button
                               variant="outline"
+                              className="flex items-center gap-1 relative z-30 hover:bg-primary hover:text-primary-foreground transition-colors"
                               size="sm"
                               onClick={() => handleViewShipment(shipment)}
                             >
@@ -501,6 +566,7 @@ const DistributorDashboard = () => {
                             {shipment.status === "pending" && (
                               <Button
                                 variant="outline"
+                                className="flex items-center gap-1 relative z-30 hover:bg-primary hover:text-primary-foreground transition-colors"
                                 size="sm"
                                 onClick={() =>
                                   handleUpdateStatus(
@@ -527,6 +593,16 @@ const DistributorDashboard = () => {
                                 Mark Delivered
                               </Button>
                             )}
+
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex items-center gap-1"
+                              onClick={() => handleGenerateQR(shipment)}
+                            >
+                              <QrCode size={14} />
+                              Generate QR
+                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -672,7 +748,10 @@ const DistributorDashboard = () => {
                         Drugs Included:
                       </span>
                       <span className="font-medium">
-                        {selectedShipment.drug_ids.length} drugs
+                        {Array.isArray(selectedShipment.drug_ids)
+                          ? selectedShipment.drug_ids.length
+                          : 0}{" "}
+                        drugs
                       </span>
                     </div>
                   </div>
@@ -714,6 +793,7 @@ const DistributorDashboard = () => {
                     <Button
                       variant="outline"
                       className="flex-1 flex items-center gap-1"
+                      onClick={() => handleGenerateQR(selectedShipment)}
                     >
                       <QrCode size={14} />
                       Generate QR
@@ -733,6 +813,169 @@ const DistributorDashboard = () => {
                         Ship Now
                       </Button>
                     )}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {selectedShipmentForQR && (
+          <Card className="glass-card">
+            <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-t-xl">
+              <div className="flex justify-between items-center">
+                <CardTitle>Shipment Verification QR Code</CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedShipmentForQR(null)}
+                >
+                  Close
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="flex flex-col md:flex-row gap-6 items-center">
+                <div className="bg-white p-6 rounded-lg shadow-md flex items-center justify-center">
+                  <div
+                    id="distributor-qr-code-container"
+                    className="w-48 h-48"
+                  ></div>
+                </div>
+
+                <div className="flex-1 space-y-4">
+                  <div>
+                    <h3 className="text-lg font-medium">
+                      Shipment ID: {selectedShipmentForQR.shipment_id}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Blockchain Transaction ID:{" "}
+                      {selectedShipmentForQR.blockchain_tx_id}
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <div className="text-sm text-muted-foreground">
+                        Status
+                      </div>
+                      <div className="font-medium capitalize">
+                        {selectedShipmentForQR.status.replace("_", " ")}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="text-sm text-muted-foreground">
+                        Ship Date
+                      </div>
+                      <div className="font-medium">
+                        {new Date(
+                          selectedShipmentForQR.ship_date
+                        ).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="text-sm text-muted-foreground">
+                        Number of Drugs
+                      </div>
+                      <div className="font-medium">
+                        {selectedShipmentForQR.drug_ids.length}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="text-sm text-muted-foreground">
+                        Blockchain Status
+                      </div>
+                      <div className="font-medium flex items-center gap-1">
+                        {getBlockchainStatus(selectedShipmentForQR).status ===
+                        "confirmed" ? (
+                          <>
+                            <CheckCircle size={16} className="text-green-500" />
+                            <span>Verified on blockchain</span>
+                          </>
+                        ) : getBlockchainStatus(selectedShipmentForQR)
+                            .status === "pending" ? (
+                          <>
+                            <Loader2
+                              size={16}
+                              className="animate-spin text-amber-500"
+                            />
+                            <span>Pending confirmation</span>
+                          </>
+                        ) : (
+                          <>
+                            <AlertTriangle size={16} className="text-red-500" />
+                            <span>Not on blockchain</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 flex gap-2">
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => {
+                        const qrContainer = document.getElementById(
+                          "distributor-qr-code-container"
+                        );
+                        if (qrContainer) {
+                          const printWindow = window.open("", "_blank");
+                          if (printWindow) {
+                            printWindow.document.write(`
+                              <html>
+                                <head>
+                                  <title>QR Code - Shipment ${selectedShipmentForQR.shipment_id}</title>
+                                  <style>
+                                    body { display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+                                    img { max-width: 100%; height: auto; }
+                                  </style>
+                                </head>
+                                <body>
+                                  ${qrContainer.innerHTML}
+                                </body>
+                              </html>
+                            `);
+                            printWindow.document.close();
+                            printWindow.print();
+                          }
+                        }
+                      }}
+                    >
+                      Print QR Code
+                    </Button>
+                    <Button
+                      className="flex-1"
+                      onClick={async () => {
+                        const qrContainer = document.getElementById(
+                          "distributor-qr-code-container"
+                        );
+                        if (qrContainer) {
+                          const img = qrContainer.querySelector("img");
+                          if (img) {
+                            const link = document.createElement("a");
+                            link.href = img.src;
+                            link.download = `qr-shipment-${selectedShipmentForQR.shipment_id}.png`;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                          }
+                        }
+                      }}
+                    >
+                      Download QR Code
+                    </Button>
+                  </div>
+
+                  <div className="bg-secondary/10 p-4 rounded-lg">
+                    <div className="text-sm font-medium mb-2">
+                      Verification Instructions
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      This QR code contains the shipment details and can be
+                      scanned to verify the shipment's authenticity and track
+                      its status on the blockchain.
+                    </p>
                   </div>
                 </div>
               </div>

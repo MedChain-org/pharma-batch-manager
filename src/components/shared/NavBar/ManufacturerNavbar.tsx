@@ -1,12 +1,6 @@
 import React from "react";
 import BaseNavbar from "./BaseNavbar";
-import {
-  Factory,
-  Pill,
-  Package,
-  BarChart3,
-  QrCode,
-} from "lucide-react";
+import { Factory, Pill, Package, BarChart3, QrCode } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 const ManufacturerNavbar: React.FC = () => {

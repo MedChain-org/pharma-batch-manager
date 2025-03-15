@@ -134,7 +134,14 @@ export async function fetchShipments() {
     return [];
   }
   
-  return data as Shipment[];
+  // Ensure drug_ids is always an array
+  const formattedData = data.map(shipment => ({
+    ...shipment,
+    drug_ids: Array.isArray(shipment.drug_ids) ? shipment.drug_ids : 
+             typeof shipment.drug_ids === 'string' ? shipment.drug_ids.split(',').filter(Boolean) : []
+  }));
+  
+  return formattedData as Shipment[];
 }
 
 export async function fetchShipmentsByDistributor(distributorId: string) {
@@ -149,18 +156,29 @@ export async function fetchShipmentsByDistributor(distributorId: string) {
     return [];
   }
   
-  return data as Shipment[];
+  // Ensure drug_ids is always an array
+  const formattedData = data.map(shipment => ({
+    ...shipment,
+    drug_ids: Array.isArray(shipment.drug_ids) ? shipment.drug_ids : 
+             typeof shipment.drug_ids === 'string' ? shipment.drug_ids.split(',').filter(Boolean) : []
+  }));
+  
+  return formattedData as Shipment[];
 }
 
 export async function addShipment(shipment: Omit<Shipment, 'shipment_id' | 'timestamp' | 'blockchain_tx_id'>) {
   // Generate a unique ID for the shipment
   const shipment_id = `ship_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   
+  // Ensure drug_ids is an array
+  const drugIdsArray = Array.isArray(shipment.drug_ids) ? shipment.drug_ids : [];
+  
   const { data, error } = await supabase
     .from('shipments')
     .insert([
       { 
         ...shipment,
+        drug_ids: drugIdsArray,
         shipment_id,
         blockchain_tx_id: 'pending',
         timestamp: new Date().toISOString()

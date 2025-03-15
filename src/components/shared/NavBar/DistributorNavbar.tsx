@@ -1,6 +1,6 @@
 import React from "react";
 import BaseNavbar from "./BaseNavbar";
-import { Truck, BarChart3, Package, Route } from "lucide-react";
+import { Truck, BarChart3, Package } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 const DistributorNavbar: React.FC = () => {
@@ -14,11 +14,6 @@ const DistributorNavbar: React.FC = () => {
       label: "Shipments",
       href: "/distributor/shipments",
       icon: <Package className="h-4 w-4" />,
-    },
-    {
-      label: "Tracking",
-      href: "/distributor/tracking",
-      icon: <Route className="h-4 w-4" />,
     },
   ];
 
