@@ -31,6 +31,8 @@ import {
   fetchDrugStatusUpdates,
   addDrugStatusUpdate,
   fetchDrugById,
+  addShipment,
+  addShipmentStatusUpdate,
 } from "@/lib/database";
 import QRCodeLib from "qrcode";
 
@@ -223,10 +225,39 @@ const ManufacturerDashboard = () => {
       });
 
       if (drugData) {
-        toast({
-          title: "Success",
-          description: "New drug batch added successfully to blockchain!",
-        });
+        // Manually create a shipment for the new drug
+        try {
+          const shipmentData = await addShipment({
+            drug_ids: [drugData.drug_id],
+            sender: user.id,
+            receiver: user.id, // Initially set to the manufacturer until assigned
+            status: "pending",
+            ship_date: new Date().toISOString().split("T")[0], // Current date in YYYY-MM-DD format
+          });
+
+          if (shipmentData) {
+            // Add initial shipment status update
+            await addShipmentStatusUpdate({
+              shipment_id: shipmentData.shipment_id,
+              status: "pending",
+              location: "Manufacturing Facility",
+              updated_by: user.id,
+            });
+
+            toast({
+              title: "Success",
+              description: "New drug batch and shipment added successfully!",
+            });
+          }
+        } catch (shipmentError) {
+          console.error("Error creating shipment:", shipmentError);
+          toast({
+            title: "Warning",
+            description:
+              "Drug added but failed to create shipment automatically.",
+            variant: "destructive",
+          });
+        }
 
         // Add the new drug to the pending list for polling
         setPendingDrugIds((prev) => [...prev, drugData.drug_id]);
@@ -398,60 +429,6 @@ const ManufacturerDashboard = () => {
                   </span>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="col-span-1 md:col-span-2 glass-card">
-            <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-t-xl">
-              <CardTitle>Register New Drug Batch on Blockchain</CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input
-                  placeholder="Drug Name"
-                  value={newDrug.name || ""}
-                  onChange={(e) =>
-                    setNewDrug({ ...newDrug, name: e.target.value })
-                  }
-                />
-                <Input
-                  placeholder="Batch Number"
-                  value={newDrug.batch_number || ""}
-                  onChange={(e) =>
-                    setNewDrug({ ...newDrug, batch_number: e.target.value })
-                  }
-                />
-                <Input
-                  type="date"
-                  placeholder="Manufacturing Date"
-                  value={newDrug.manufacture_date || ""}
-                  onChange={(e) =>
-                    setNewDrug({ ...newDrug, manufacture_date: e.target.value })
-                  }
-                />
-                <Input
-                  type="date"
-                  placeholder="Expiry Date"
-                  value={newDrug.expiry_date || ""}
-                  onChange={(e) =>
-                    setNewDrug({ ...newDrug, expiry_date: e.target.value })
-                  }
-                />
-              </div>
-              <Button
-                onClick={handleAddDrug}
-                className="mt-4 w-full sm:w-auto"
-                disabled={submitting}
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Adding to Blockchain...
-                  </>
-                ) : (
-                  "Register Batch on Blockchain"
-                )}
-              </Button>
             </CardContent>
           </Card>
         </div>

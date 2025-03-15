@@ -6,7 +6,6 @@ import {
   QrCode,
   Pill,
   Package,
-  FileText,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
@@ -31,11 +30,6 @@ const PharmacistNavbar: React.FC = () => {
       label: "Shipments",
       href: "/pharmacist/shipments",
       icon: <Package className="h-4 w-4" />,
-    },
-    {
-      label: "Reports",
-      href: "/pharmacist/reports",
-      icon: <FileText className="h-4 w-4" />,
     },
   ];
 

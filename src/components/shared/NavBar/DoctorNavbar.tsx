@@ -3,7 +3,6 @@ import BaseNavbar from "./BaseNavbar";
 import {
   Stethoscope,
   BarChart3,
-  FileText,
   ClipboardList,
   QrCode,
   User,
@@ -31,11 +30,6 @@ const DoctorNavbar: React.FC = () => {
       label: "Patients",
       href: "/doctor/patients",
       icon: <User className="h-4 w-4" />,
-    },
-    {
-      label: "Reports",
-      href: "/doctor/reports",
-      icon: <FileText className="h-4 w-4" />,
     },
   ];
 
