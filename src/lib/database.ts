@@ -412,3 +412,45 @@ export async function fetchDrugById(drugId: string) {
   
   return data as Drug;
 }
+
+export async function fetchDrugsByPharmacist(pharmacistId: string) {
+  // First, fetch all shipments delivered to this pharmacist
+  const { data: shipments, error: shipmentError } = await supabase
+    .from('shipments')
+    .select('*')
+    .eq('receiver', pharmacistId)
+    .eq('status', 'delivered');
+
+  if (shipmentError) {
+    console.error('Error fetching shipments:', shipmentError);
+    return [];
+  }
+
+  // Extract all drug IDs from shipments
+  const drugIds = shipments.reduce((acc: string[], shipment) => {
+    const ids = Array.isArray(shipment.drug_ids) 
+      ? shipment.drug_ids 
+      : typeof shipment.drug_ids === 'string'
+      ? shipment.drug_ids.split(',').filter(Boolean)
+      : [];
+    return [...acc, ...ids];
+  }, []);
+
+  if (drugIds.length === 0) {
+    return [];
+  }
+
+  // Fetch drugs based on the collected drug IDs
+  const { data: drugs, error: drugsError } = await supabase
+    .from('drugs')
+    .select('*')
+    .in('drug_id', drugIds)
+    .order('timestamp', { ascending: false });
+
+  if (drugsError) {
+    console.error('Error fetching drugs:', drugsError);
+    return [];
+  }
+
+  return drugs as Drug[];
+}

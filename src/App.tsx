@@ -17,6 +17,7 @@ import DoctorDashboard from "./pages/dashboard/doctor";
 import { GenerateQR, DrugBatches, SupplyChain } from "./pages/manufacturer";
 import ShipmentsPage from "./pages/distributor/shipments";
 import { UserRole } from "@/utils/types";
+import InventoryPage from "./pages/pharmacist/inventory";
 
 const queryClient = new QueryClient();
 
@@ -132,34 +133,10 @@ const App = () => (
                 }
               />
               <Route
-                path="/pharmacist/verify"
-                element={
-                  <ProtectedRoute allowedRoles={["pharmacist"]}>
-                    <PharmacistDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
                 path="/pharmacist/inventory"
                 element={
                   <ProtectedRoute allowedRoles={["pharmacist"]}>
-                    <PharmacistDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/pharmacist/shipments"
-                element={
-                  <ProtectedRoute allowedRoles={["pharmacist"]}>
-                    <PharmacistDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/pharmacist/reports"
-                element={
-                  <ProtectedRoute allowedRoles={["pharmacist"]}>
-                    <PharmacistDashboard />
+                    <InventoryPage />
                   </ProtectedRoute>
                 }
               />

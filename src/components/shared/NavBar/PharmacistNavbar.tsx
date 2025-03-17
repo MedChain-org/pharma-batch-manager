@@ -1,12 +1,6 @@
 import React from "react";
 import BaseNavbar from "./BaseNavbar";
-import {
-  Stethoscope,
-  BarChart3,
-  QrCode,
-  Pill,
-  Package,
-} from "lucide-react";
+import { Pill, BarChart3 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 const PharmacistNavbar: React.FC = () => {
@@ -17,26 +11,16 @@ const PharmacistNavbar: React.FC = () => {
       icon: <BarChart3 className="h-4 w-4" />,
     },
     {
-      label: "Verify Prescriptions",
-      href: "/pharmacist/verify",
-      icon: <QrCode className="h-4 w-4" />,
-    },
-    {
       label: "Inventory",
       href: "/pharmacist/inventory",
       icon: <Pill className="h-4 w-4" />,
-    },
-    {
-      label: "Shipments",
-      href: "/pharmacist/shipments",
-      icon: <Package className="h-4 w-4" />,
     },
   ];
 
   return (
     <BaseNavbar
       roleName="Pharmacist"
-      roleIcon={<Stethoscope className="h-5 w-5 text-primary" />}
+      roleIcon={<Pill className="h-5 w-5 text-primary" />}
     >
       <div className="hidden md:flex items-center gap-6 mx-6">
         {navItems.map((item) => (
